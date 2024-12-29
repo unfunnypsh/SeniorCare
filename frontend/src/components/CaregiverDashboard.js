@@ -12,9 +12,10 @@ const CaregiverDashboard = () => {
     details: '',
   });
   const [physicalActivity, setPhysicalActivity] = useState({
-    activityName: '',
+    physicalName: '',
     frequency: '',
     duration: '',
+    assignedDate: '',
     intensity: 'Low',
   });
   const [cognitiveTask, setCognitiveTask] = useState({
@@ -61,6 +62,15 @@ const CaregiverDashboard = () => {
       alert(message);
     } catch (error) {
       console.error(`Error submitting ${endpoint}:`, error);
+    }
+  };
+  const handleCleanRedundantActivity = async () => {
+    try {
+      await axios.post('http://localhost:5000/api/clean-activity-participation');
+      alert('Redundant activity participation cleaned successfully.');
+    } catch (error) {
+      console.error('Error cleaning redundant activity participation:', error);
+      alert('Error cleaning redundant activity participation.');
     }
   };
 
@@ -133,8 +143,8 @@ const CaregiverDashboard = () => {
           >
             <input
               type="text"
-              name="activityName"
-              placeholder="Activity Name"
+              name="physicalName"
+              placeholder="Physical Name"
               onChange={(e) => handleInputChange(e, setPhysicalActivity)}
               required
             />
@@ -149,6 +159,12 @@ const CaregiverDashboard = () => {
               type="number"
               name="duration"
               placeholder="Duration (minutes)"
+              onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+              required
+            />
+            <input
+              type="date"
+              name="assignedDate"
               onChange={(e) => handleInputChange(e, setPhysicalActivity)}
               required
             />
@@ -197,6 +213,9 @@ const CaregiverDashboard = () => {
           </form>
         </div>
       )}
+      <div>
+        <button onClick={handleCleanRedundantActivity}>Clean Redundant Activity Participation</button>
+      </div>
     </div>
   );
 };
