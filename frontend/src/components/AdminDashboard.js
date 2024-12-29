@@ -87,14 +87,14 @@ const AdminDashboard = () => {
       <h3>Seniors List</h3>
       <ul>
         {seniors.map(senior => (
-          <li key={senior.SeniorID}>{senior.Name} - {senior.Age} years old</li>
+          <li key={senior.SeniorID}>{senior.SeniorID}-{senior.Name} - {senior.Age} years old</li>
         ))}
       </ul>
 
       <h3>Caregivers List</h3>
       <ul>
         {caregivers.map(caregiver => (
-          <li key={caregiver.CaregiverID}>{caregiver.Name}</li>
+          <li key={caregiver.CaregiverID}>{caregiver.CaregiverID}-{caregiver.Name}</li>
  ))}
       </ul>
     </div>
