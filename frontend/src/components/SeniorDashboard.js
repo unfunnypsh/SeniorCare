@@ -13,6 +13,11 @@ const SeniorDashboard = () => {
     const [caregiver, setCaregiver] = useState(null);
     const [socialActivity, setSocialActivity] = useState([]);
     const [progress, setProgress] = useState(null);
+
+    const [participationData, setParticipationData] = useState([]);
+    const [progressData, setProgressData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     useEffect(()=>{
         fetchSeniors();
     },[]);
@@ -72,7 +77,81 @@ const fetchSocialInteractions = async (seniorID) => {
         console.error('Error fetching social interactions:', error);
     }
 };
-    
+const fetchParticipationData = async (seniorID) => {
+    try {
+        const response = await axios.get(`http://localhost:5000/api/activityparticipation?seniorID=${seniorID}`);
+        setParticipationData(response.data);
+    } catch (error) {
+        console.error('Error fetching participation data:', error);
+    }
+};
+const calculateScores = (data) => {
+    const progressEntries = {};
+
+    data.forEach(entry => {
+        const date = entry.ParticipationDate.split('T')[0]; // Extract date from datetime
+
+        if (!progressEntries[date]) {
+            progressEntries[date] = { Score: 0, Notes: "", SeniorID: entry.SeniorID };
+        }
+
+        // Scoring based on participation
+        if (entry.PhysicalActivityID) {
+            // Assuming you have a way to determine the intensity of the physical activity
+            // For example, you might fetch the activity details separately or have them in the participation data
+            // Here, I'm just using a placeholder for intensity
+            const intensity = 'High'; // Replace with actual logic to determine intensity
+
+            if (intensity === 'High') {
+                progressEntries[date].Score += 10;
+            } else if (intensity === 'Moderate') {
+                progressEntries[date].Score += 5;
+            } else if (intensity === 'Low') {
+                progressEntries[date].Score += 2;
+            }
+        }
+
+        if (entry.CognitiveTaskID) {
+            // Assuming cognitive tasks contribute a fixed score
+            progressEntries[date].Score += 10; // Example scoring for cognitive tasks
+        }
+
+        progressEntries[date].Notes = "Data processed based on activity participation.";
+    });
+
+    return Object.entries(progressEntries).map(([date, data]) => ({
+        Date: date,
+        ...data
+    }));
+};
+
+const saveProgressData = async (progress) => {
+    try {
+        await Promise.all(progress.map(async (entry) => {
+            await axios.post('/api/progress', {
+                SeniorID: entry.SeniorID,
+                Date: entry.Date,
+                ProgressStatus: entry.Score > 50 ? "Active" : "Needs Improvement",
+                Notes: entry.Notes,
+                Score: entry.Score
+            });
+        }));
+        alert('Progress data saved successfully!');
+    } catch (error) {
+        console.error('Error saving progress data:', error);
+    }
+};
+
+const handleProcessAndSave = async () => {
+    if (selectedSenior) {
+        await fetchParticipationData(selectedSenior.SeniorID); // Fetch participation data
+        const scores = calculateScores(participationData); // Calculate scores
+        setProgressData(scores); // Set progress data state
+        await saveProgressData(scores); // Save progress data
+    } else {
+        alert('Please select a senior first.');
+    }
+};
 
     const fetchProgressTracking = (seniorId) => {
         axios.get(`http://localhost:5000/api/progress/${seniorId}/progress-tracking`)
@@ -91,7 +170,15 @@ const fetchSocialInteractions = async (seniorID) => {
         fetchSocialInteractions(senior.SeniorID);
     };
 
-
+    useEffect(() => {
+        const loadData = async () => {
+            setLoading(true);
+            await fetchParticipationData();
+            setLoading(false);
+        };
+        loadData();
+    }, [seniorID]);
+    
     return (
         <div>
             <h1>Senior Dashboard</h1>
@@ -164,6 +251,24 @@ const fetchSocialInteractions = async (seniorID) => {
 )}
                 </div>
             )}
+<div>
+                <h1>Senior Dashboard</h1>
+                {loading ? (
+                    <p>Loading...</p>
+                ) : (
+                    <>
+                        <button onClick={handleProcessAndSave}>Process and Save Progress</button>
+                        <div>
+                            <h2>Participation Data</h2>
+                            <pre>{JSON.stringify(participationData, null, 2)}</pre>
+                        </div>
+                        <div>
+                            <h2>Calculated Progress Data</h2>
+                            <pre>{JSON.stringify(progressData, null, 2)}</pre>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 };

@@ -132,7 +132,7 @@ app.post('/api/admin/caregiver', (req, res) => {
 
 
   
-// Fetch seniors assigned to a caregiver
+// Fetch caregiver assigned to a seniors
 app.get('/api/seniors/:caregiverID', (req, res) => {
     const caregiverID = req.params.caregiverID;
     const query = 'SELECT * FROM Seniors WHERE CaregiverID = ?';
@@ -204,8 +204,7 @@ app.post('/api/caregiver/physical-activity', (req, res) => {
     });
   });
   
-  // API to call the CleanRedundantActivityParticipation stored procedure
-// API to execute clean-up procedure (no restriction)
+// API to execute clean-up procedure
 app.post('/api/clean-activity-participation', (req, res) => {
     // First, disable safe updates
     db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
@@ -291,7 +290,63 @@ app.get('/api/senior/:seniorID/physical-activities', (req, res) => {
     });
   });
   
+  app.get('/api/activityparticipation', (req, res) => {
+    const seniorID = req.query.seniorID;
+    const query = 'SELECT * FROM ActivityParticipation WHERE SeniorID = ?';
+    db.query(query, [seniorID], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error fetching participation data.');
+        }
+        res.json(results);
+    });
+});
 
+app.post('/api/progress', (req, res) => {
+    const { SeniorID, Date, ProgressStatus, Notes, Score } = req.body;
+    const query = 'INSERT INTO ProgressTracking (SeniorID, Date, ProgressStatus, Notes, Score) VALUES (?, ?, ?, ?, ?)';
+    db.query(query, [SeniorID, Date, ProgressStatus, Notes, Score], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error saving progress data.');
+        }
+        res.status(201).send('Progress data saved successfully.');
+    });
+});
+
+// Admin login endpoint
+app.post('/api/admin/login', (req, res) => {
+    const { username, password } = req.body;
+    const query = 'SELECT * FROM Admins WHERE username = ? AND password = ?'; // Adjust table name and fields as necessary
+    db.query(query, [username, password], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ success: false, message: 'Error during login' });
+        }
+        if (results.length > 0) {
+            return res.status(200).json({ success: true });
+        } else {
+            return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
+        }
+    });
+});
+
+// Caregiver login endpoint
+app.post('/api/caregiver/login', (req, res) => {
+    const { name, caregiverId } = req.body;
+    const query = 'SELECT * FROM Caregivers WHERE name = ? AND caregiverId = ?'; // Adjust table name and fields as necessary
+    db.query(query, [name, caregiverId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ success: false, message: 'Error during login' });
+        }
+        if (results.length > 0) {
+            return res.status(200).json({ success: true });
+        } else {
+            return res.status(401).json({ success: false, message: 'Invalid caregiver credentials' });
+        }
+    });
+});
 
   // Start the server
   const PORT = process.env.PORT || 5000;
