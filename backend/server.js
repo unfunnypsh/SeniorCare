@@ -348,6 +348,80 @@ app.post('/api/caregiver/login', (req, res) => {
     });
 });
 
+app.post('/api/caregiver/insert-progress', (req, res) => {
+  const query = 'CALL InsertProgressTracking()';
+
+  db.query(query, (err) => {
+    if (err) {
+      console.error('Error executing stored procedure:', err);
+      res.status(500).send('Failed to insert progress tracking data.');
+    } else {
+      res.status(200).send('Progress tracking data inserted successfully.');
+    }
+  });
+});
+
+// API to fetch all progress tracking data
+app.get('/api/progress-tracking', (req, res) => {
+  const query = 'SELECT * FROM ProgressTracking';
+  db.query(query, (err, results) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).send('Error fetching progress tracking data.');
+      }
+      res.json(results);
+  });
+});
+
+// API to update notes in progress tracking
+app.put('/api/progress-tracking/update', (req, res) => {
+  const { progressID, seniorID, notes } = req.body;
+
+  if (!progressID || !seniorID || notes === undefined) {
+      return res.status(400).send('ProgressID, SeniorID, and Notes are required.');
+  }
+
+  const query = 'UPDATE ProgressTracking SET Notes = ? WHERE ProgressID = ? AND SeniorID = ?';
+  db.query(query, [notes, progressID, seniorID], (err, result) => {
+      if (err) {
+          console.error(err);
+          return res.status(500).send('Error updating notes in progress tracking.');
+      }
+      if (result.affectedRows === 0) {
+          return res.status(404).send('No matching progress tracking record found.');
+      }
+      res.status(200).send('Notes updated successfully.');
+  });
+});
+app.post('/api/update-progress-status', (req, res) => {
+  // First, disable safe updates
+  db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
+      if (err) {
+          console.error('Error disabling safe updates:', err);
+          return res.status(500).send('Error disabling SQL_SAFE_UPDATES.');
+      }
+
+      
+      db.query('CALL  UpdateProgressStatus();', (err, results) => {
+          if (err) {
+              console.error('Error executing update progress :', err);
+              return res.status(500).send('Error cleaning redundant activity participation.');
+          }
+
+          // Finally, re-enable safe updates
+          db.query('SET SQL_SAFE_UPDATES = 1;', (err, results) => {
+              if (err) {
+                  console.error('Error re-enabling safe updates:', err);
+                  return res.status(500).send('Error re-enabling SQL_SAFE_UPDATES.');
+              }
+
+              // Respond with success message
+              res.status(200).send('updated progress status successfully.');
+          });
+      });
+  });
+});
+
   // Start the server
   const PORT = process.env.PORT || 5000;
   app.listen(PORT, () => {
