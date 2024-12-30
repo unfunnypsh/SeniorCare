@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const SeniorDashboard = () => {
     // States to manage selected senior, activity types, and progress
@@ -14,10 +15,15 @@ const SeniorDashboard = () => {
     const [socialActivity, setSocialActivity] = useState([]);
     const [progress, setProgress] = useState(null);
     
-
+    const [report, setReport] = useState('');
     const [participationData, setParticipationData] = useState([]);
     const [progressData, setProgressData] = useState([]);
-    const [loading, setLoading] = useState(true);
+
+    // State variables for toggling sections
+    const [showPhysicalActivities, setShowPhysicalActivities] = useState(false);
+    const [showCognitiveTasks, setShowCognitiveTasks] = useState(false);
+    const [showSocialInteractions, setShowSocialInteractions] = useState(false);
+    const [showProgressTracking, setShowProgressTracking] = useState(false);
 
     useEffect(()=>{
         fetchSeniors();
@@ -86,25 +92,65 @@ const fetchProgressTracking = async (seniorID) => {
         console.error('Error fetching progress data:', error);
     }
 };
+
+
+
+
+const handleFetchDetails = async () => {
+    if (!selectedSenior) {
+        alert("Please select a senior first!");
+        return;
+    }
+
+    try {
+        const response = await axios.get(
+            `http://localhost:5000/api/senior/${selectedSenior.SeniorID}/report`
+        );
+        console.log("Senior Details Response:", response.data); // Log the API response
+        setSeniorDetails(response.data); // Set the fetched details in state
+        alert("Senior details fetched successfully!");
+    } catch (error) {
+        console.error("Error fetching senior details:", error);
+        alert("Failed to fetch senior details. Please try again.");
+    }
+};
+
+async function fetchSeniorReport(seniorID) {
+    try {
+      const response = await fetch(`/api/senior/${seniorID}/report`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching senior report:', error);
+      throw error;
+    }
+  }
+
+
+
     const handleSelectSenior = (senior) => {
         setSelectedSenior(senior);
         fetchPhysicalActivities(senior.SeniorID);
         fetchCognitiveTasks(senior.SeniorID);
         fetchSocialInteractions(senior.SeniorID);
         fetchProgressTracking(senior.SeniorID);
+        setSelectedSenior(senior);
     };
 
     
     return (
-        <div>
-            <h1>Senior Dashboard</h1>
+        <div className="container mt-5">
+            <h1 className="text-center mb-4">Senior Dashboard</h1>
             <h3>Seniors List</h3>
-            <ul>
+            <ul className="list-group mb-4">
                 {seniors.map((senior) => (
                     <li
                         key={senior.SeniorID}
+                        className="list-group-item list-group-item-action"
                         onClick={() => handleSelectSenior(senior)}
-                        style={{ cursor: 'pointer', margin: '10px 0', color: 'blue' }}
                     >
                         {senior.Name} - {senior.Age} years old
                     </li>
@@ -112,81 +158,142 @@ const fetchProgressTracking = async (seniorID) => {
             </ul>
 
             {selectedSenior && (
-                <div>
-                    <h2>Selected Senior Details</h2>
-                    <p><strong>Name:</strong> {selectedSenior.Name}</p>
-                    <p><strong>Age:</strong> {selectedSenior.Age}</p>
-                    <p><strong>Gender:</strong> {selectedSenior.Gender}</p>
-                    <p><strong>Contact Details:</strong> {selectedSenior.ContactDetails}</p>
-                    <p><strong>Address:</strong> {selectedSenior.Address}</p>
-                    <p><strong>Emergency Contact:</strong> {selectedSenior.EmergencyContact}</p>
+                <div className="card mb-4">
+                    <div className="card-body">
+                        
 
-                    <h3>Physical Activities</h3>
-                    {physicalActivity.length > 0 ? (
-                        <ul>
-                            {physicalActivity.map((activity, index) => (
-                                <li key={index}>
-                                    <strong>Activity:</strong> {activity.PhysicalName} <br />
-                                    <strong>Frequency:</strong> {activity.Frequency} <br />
-                                    <strong>Duration:</strong> {activity.Duration} minutes
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No physical activities found.</p>
-                    )}
+                        <h3>Physical Activities</h3>
+                        <button className="btn btn-info" onClick={() => setShowPhysicalActivities(!showPhysicalActivities)}>
+                            {showPhysicalActivities ? 'Hide' : 'Show'} Physical Activities
+                        </button>
+                        {showPhysicalActivities && (
+                            <table className="table table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Activity</th>
+                                        <th>Frequency</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {physicalActivity.length > 0 ? (
+                                        physicalActivity.map((activity, index) => (
+                                            <tr key={index}>
+                                                <td>{activity.PhysicalName}</td>
+                                                <td>{activity.Frequency}</td>
+                                                <td>{new Date(activity.AssignedDate).toLocaleDateString()}</td>
+                                                <td>{activity.Duration} minutes</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="4">No physical activities found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
 
-<h3>Cognitive Tasks</h3>
-                    {cognitiveActivity.length > 0 ? (
-                        <ul>
-                            {cognitiveActivity.map((task, index) => (
-                                <li key={index}>
-                                    <strong>Task Name:</strong> {task.TaskName} <br />
-                                    <strong>Frequency:</strong> {task.Frequency} <br />
-                                    <strong>Duration:</strong> {task.Duration} minutes
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No cognitive tasks found.</p>
-                    )}
+                        <h3>Cognitive Tasks</h3>
+                        <button className="btn btn-info" onClick={() => setShowCognitiveTasks(!showCognitiveTasks)}>
+                            {showCognitiveTasks ? 'Hide' : 'Show'} Cognitive Tasks
+                        </button>
+                        {showCognitiveTasks && (
+                            <table className="table table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Task Name</th>
+                                        <th>Date</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cognitiveActivity.length > 0 ? (
+                                        cognitiveActivity.map((task, index) => (
+                                            <tr key={index}>
+                                                <td>{task.TaskName}</td>
+                                                <td>{new Date(task.AssignedDate).toLocaleDateString()}</td>
+                                                <td>{task.Duration} minutes</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">No cognitive tasks found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
 
-<h3>Social Interactions</h3>
-{socialActivity.length > 0 ? (
-    <ul>
-        {socialActivity.map((interaction, index) => (
-            <li key={index}>
-                <strong>Type:</strong> {interaction.InteractionType} <br />
-                <strong>Date:</strong> {new Date(interaction.InteractionDate).toLocaleDateString()} <br />
-                <strong>Details:</strong> {interaction.Details}
-            </li>
-        ))}
-    </ul>
-) : (
-    <p>No social interactions found.</p>
-)}
+                        <h3>Social Interactions</h3>
+                        <button className="btn btn-info" onClick={() => setShowSocialInteractions(!showSocialInteractions)}>
+                            {showSocialInteractions ? 'Hide' : 'Show'} Social Interactions
+                        </button>
+                        {showSocialInteractions && (
+                            <table className="table table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>Date</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {socialActivity.length > 0 ? (
+                                        socialActivity.map((interaction, index) => (
+                                            <tr key={index}>
+                                                <td>{interaction.InteractionType}</td>
+                                                <td>{new Date(interaction.InteractionDate).toLocaleDateString()}</td>
+                                                <td>{interaction.Details}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="3">No social interactions found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
 
-<h3>Progress Tracking</h3>
-                    {progressData.length > 0 ? (
-                        <ul>
-                            {progressData.map((item, index) => (
-                                <li key={index}>
-                                    <strong>Senior ID:</strong> {item.SeniorID} <br />
-                                    <strong>Date:</strong> {new Date(item.Date).toLocaleDateString()} <br />
-                                    <strong>Progress Status:</strong> {item.ProgressStatus} <br />
-                                    <strong>Notes:</strong> {item.Notes} <br />
-                                    <strong>Progress Score:</strong> {item.ProgressScore} <br />
-                                </li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No progress tracking found.</p>
-                    )}
-
-
+                        <h3>Progress Tracking</h3>
+                        <button className="btn btn-info" onClick={() => setShowProgressTracking(!showProgressTracking)}>
+                            {showProgressTracking ? 'Hide' : 'Show'} Progress Tracking
+                        </button>
+                        {showProgressTracking && (
+                            <table className="table table-bordered mt-3">
+                                <thead>
+                                    <tr>
+                                        <th>Senior ID</th>
+                                        <th>Date</th>
+                                        <th>Progress Status</th>
+                                        <th>Notes</th>
+                                        <th>Progress Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {progressData.length > 0 ? (
+                                        progressData.map((item, index) => (
+                                            <tr key={index}>
+                                                <td>{item.SeniorID}</td>
+                                                <td>{new Date(item.Date).toLocaleDateString()}</td>
+                                                <td>{item.ProgressStatus}</td>
+                                                <td>{item.Notes}</td>
+                                                <td>{item.ProgressScore}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan ="5">No progress tracking found.</td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                    </div>
                 </div>
             )}
-
         </div>
     );
 };

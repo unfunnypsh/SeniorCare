@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 
 const AdminDashboard = () => {
   const [seniors, setSeniors] = useState([]);
@@ -17,6 +19,10 @@ const AdminDashboard = () => {
     name: '',
     contactDetails: '',
   });
+
+  // State variables for toggling lists
+  const [showSeniorsList, setShowSeniorsList] = useState(false);
+  const [showCaregiversList, setShowCaregiversList] = useState(false);
 
   useEffect(() => {
     fetchSeniors();
@@ -57,46 +63,134 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div>
-      <h2>Admin Dashboard</h2>
+    <div className="container mt-5">
+      <h2 className="mb-4 text-center">Admin Dashboard</h2>
 
-      <h3>Add Senior</h3>
-      <form onSubmit={addSenior}>
-        <input type="text" name="name" placeholder="Name" onChange={handleSeniorChange} required />
-        <input type="number" name="age" placeholder="Age" onChange={handleSeniorChange} required />
-        <input type="text" name="gender" placeholder="gender" onChange={handleSeniorChange} required />
-        <input type="text" name="contactDetails" placeholder="Contact Details" onChange={handleSeniorChange} required />
-        <input type="text" name="address" placeholder="Address" onChange={handleSeniorChange} required />
-        <input type="text" name="emergencyContact" placeholder="Emergency Contact" onChange={handleSeniorChange} required />
-        <select name="caregiverID" onChange={handleSeniorChange} required>
-          <option value="">Assign Caregiver</option>
-          {caregivers.map(caregiver => (
-            <option key={caregiver.CaregiverID} value={caregiver.CaregiverID}>{caregiver.Name}</option>
-          ))}
-        </select>
-        <button type="submit">Add Senior</button>
-      </form>
+      {/* Add Senior Card */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3>Add Senior</h3>
+          <form onSubmit={addSenior}>
+            <div className="form-group">
+              <input type="text" className="form-control" name="name" placeholder="Name" onChange={handleSeniorChange} required />
+            </div>
+            <div className="form-group">
+              <input type="number" className="form-control" name="age" placeholder="Age" onChange={handleSeniorChange} required />
+            </div>
+            <div className="form-group">
+              <input type="text" className="form-control" name="gender" placeholder="Gender" onChange={handleSeniorChange} required />
+            </div>
+            <div className="form-group">
+              <input type="text" className="form-control" name="contactDetails" placeholder="Contact Details" onChange={handleSeniorChange} required />
+            </div>
+            <div className="form-group">
+              <input type="text" className="form-control" name="address" placeholder="Address" onChange={handleSeniorChange} required />
+            </div>
+            <div className="form-group">
+              <input type="text" className="form-control" name="emergencyContact" placeholder="Emergency Contact" onChange={handleSeniorChange} required />
+            </div>
+            <div className="form-group">
+              <select name="caregiverID" className="form-control" onChange={handleSeniorChange} required>
+                <option value="">Assign Caregiver</option>
+                {caregivers.map(caregiver => (
+                  <option key={caregiver.CaregiverID} value={caregiver.CaregiverID}>{caregiver.Name}</option>
+                ))}
+              </select>
+            </div>
+            <button type="submit" className="btn btn-primary">Add Senior</button>
+          </form>
+        </div>
+      </ div>
 
-      <h3>Add Caregiver</h3>
-      <form onSubmit={addCaregiver}>
-        <input type="text" name="name" placeholder="Name" onChange={handleCaregiverChange} required />
-        <input type="text" name="contactDetails" placeholder="Contact Details" onChange={handleCaregiverChange} required />
-        <button type="submit">Add Caregiver</button>
-      </form>
+      {/* Add Caregiver Card */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <h3>Add Caregiver</h3>
+          <form onSubmit={addCaregiver}>
+            <div className="form-group">
+              <input type="text" className="form-control" name="name" placeholder="Name" onChange={handleCaregiverChange} required />
+            </div>
+            <div className="form-group">
+              <input type="text" className="form-control" name="contactDetails" placeholder="Contact Details" onChange={handleCaregiverChange} required />
+            </div>
+            <button type="submit" className="btn btn-primary">Add Caregiver</button>
+          </form>
+        </div>
+      </div>
 
-      <h3>Seniors List</h3>
-      <ul>
-        {seniors.map(senior => (
-          <li key={senior.SeniorID}>{senior.SeniorID}-{senior.Name} - {senior.Age} years old</li>
-        ))}
-      </ul>
+      {/* Toggle Seniors List Card */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <button className="btn btn-secondary" onClick={() => setShowSeniorsList(!showSeniorsList)}>
+            {showSeniorsList ? 'Hide Seniors List' : 'Show Seniors List'}
+          </button>
+          {showSeniorsList && (
+            <div className="mt-3">
+              <h3>Seniors List</h3>
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Senior ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Contact Details</th>
+                    <th>Address</th>
+                    <th>Emergency Contact</th>
+                    <th>Caregiver ID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {seniors.map(senior => (
+                    <tr key={senior.SeniorID}>
+                      <td>{senior.SeniorID}</td>
+                      <td>{senior.Name}</td>
+                      <td>{senior.Age} years old</td>
+                      <td>{senior.Gender}</td>
+                      <td>{senior.ContactDetails}</td>
+                      <td>{senior.Address}</td>
+                      <td>{senior.EmergencyContact}</td>
+                      <td>{senior.CaregiverID}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
 
-      <h3>Caregivers List</h3>
-      <ul>
-        {caregivers.map(caregiver => (
-          <li key={caregiver.CaregiverID}>{caregiver.CaregiverID}-{caregiver.Name}</li>
- ))}
-      </ul>
+      {/* Toggle Caregivers List Card */}
+      <div className="card mb-4">
+        <div className="card-body">
+          <button className="btn btn-secondary" onClick={() => setShowCaregiversList(!showCaregiversList)}>
+            {showCaregiversList ? 'Hide Caregivers List' : 'Show Caregivers List'}
+          </button>
+          {showCaregiversList && (
+            <div className="mt-3">
+              <h3>Caregivers List</h3>
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Caregiver ID</th>
+                    <th>Name</th>
+                    <th>Contact Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {caregivers.map(caregiver => (
+                    <tr key={caregiver.CaregiverID}>
+                      <td>{caregiver.CaregiverID}</td>
+                      <td>{caregiver.Name}</td>
+                      <td>{caregiver.ContactDetails}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
