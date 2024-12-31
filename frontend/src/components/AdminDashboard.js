@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 const AdminDashboard = () => {
   const [seniors, setSeniors] = useState([]);
   const [caregivers, setCaregivers] = useState([]);
@@ -13,14 +12,14 @@ const AdminDashboard = () => {
     contactDetails: '',
     address: '',
     emergencyContact: '',
-    caregiverID: null,
+    caregiverID: '',
+    medicalHistory: '',
   });
   const [newCaregiver, setNewCaregiver] = useState({
     name: '',
     contactDetails: '',
   });
 
-  // State variables for toggling lists
   const [showSeniorsList, setShowSeniorsList] = useState(false);
   const [showCaregiversList, setShowCaregiversList] = useState(false);
 
@@ -30,88 +29,123 @@ const AdminDashboard = () => {
   }, []);
 
   const fetchSeniors = async () => {
-    const response = await axios.get('http://localhost:5000/api/admin/reports');
-    setSeniors(response.data);
+    try {
+      const response = await axios.get('http://localhost:5000/api/admin/reports');
+      setSeniors(response.data);
+    } catch (error) {
+      console.error('Error fetching seniors:', error);
+    }
   };
-  
 
   const fetchCaregivers = async () => {
-    const response = await axios.get('http://localhost:5000/api/caregivers'); // Create this endpoint
-    setCaregivers(response.data);
+    try {
+      const response = await axios.get('http://localhost:5000/api/caregivers');
+      setCaregivers(response.data);
+    } catch (error) {
+      console.error('Error fetching caregivers:', error);
+    }
   };
 
   const handleSeniorChange = (e) => {
-    setNewSenior({ ...newSenior, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setNewSenior((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleCaregiverChange = (e) => {
-    setNewCaregiver({ ...newCaregiver, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setNewCaregiver((prev) => ({ ...prev, [name]: value }));
   };
 
   const addSenior = async (e) => {
     e.preventDefault();
-    await axios.post('http://localhost:5000/api/admin/senior', newSenior);
-    fetchSeniors(); // Refresh the list
-    setNewSenior({ name: '', age: '', gender: '', contactDetails: '', address: '', emergencyContact: '', caregiverID: null });
+    try {
+      await axios.post('http://localhost:5000/api/admin/senior', newSenior);
+      fetchSeniors();
+      setNewSenior({
+        name: '',
+        age: '',
+        gender: '',
+        contactDetails: '',
+        address: '',
+        emergencyContact: '',
+        caregiverID: '',
+        medicalHistory: '',
+      });
+    } catch (error) {
+      console.error('Error adding senior:', error);
+      alert('Failed to add senior. Please try again.');
+    }
   };
 
   const addCaregiver = async (e) => {
     e.preventDefault();
-    await axios.post('http://localhost:5000/api/admin/caregiver', newCaregiver);
-    fetchCaregivers(); // Refresh the list
-    setNewCaregiver({ name: '', contactDetails: '' });
+    if (!newCaregiver.name || !newCaregiver.contactDetails) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    try {
+      await axios.post('http://localhost:5000/api/admin/caregiver', newCaregiver);
+      fetchCaregivers();
+      setNewCaregiver({ name: '', contactDetails: '' });
+    } catch (error) {
+      console.error('Error adding caregiver:', error);
+      alert('Failed to add caregiver. Please try again.');
+    }
   };
 
   return (
     <div className="container mt-5">
       <h2 className="mb-4 text-center">Admin Dashboard</h2>
 
-      {/* Add Senior Card */}
       <div className="card mb-4">
         <div className="card-body">
           <h3>Add Senior</h3>
           <form onSubmit={addSenior}>
             <div className="form-group">
-              <input type="text" className="form-control" name="name" placeholder="Name" onChange={handleSeniorChange} required />
+              <input type="text" className="form-control" name="name" placeholder="Name" value={newSenior.name} onChange={handleSeniorChange} required />
             </div>
             <div className="form-group">
-              <input type="number" className="form-control" name="age" placeholder="Age" onChange={handleSeniorChange} required />
+              <input type="number" className="form-control" name="age" placeholder="Age" value={newSenior.age} onChange={handleSeniorChange} required />
             </div>
             <div className="form-group">
-              <input type="text" className="form-control" name="gender" placeholder="Gender" onChange={handleSeniorChange} required />
+              <input type="text" className="form-control" name="gender" placeholder="Gender" value={newSenior.gender} onChange={handleSeniorChange} required />
             </div>
             <div className="form-group">
-              <input type="text" className="form-control" name="contactDetails" placeholder="Contact Details" onChange={handleSeniorChange} required />
+              <input type="text" className="form-control" name="contactDetails" placeholder="Contact Details" value={newSenior.contactDetails} onChange={handleSeniorChange} required />
             </div>
             <div className="form-group">
-              <input type="text" className="form-control" name="address" placeholder="Address" onChange={handleSeniorChange} required />
+              <input type="text" className="form-control" name="address" placeholder="Address" value={newSenior.address} onChange={handleSeniorChange} required />
             </div>
             <div className="form-group">
-              <input type="text" className="form-control" name="emergencyContact" placeholder="Emergency Contact" onChange={handleSeniorChange} required />
+              <input type="text" className="form-control" name="emergencyContact" placeholder="Emergency Contact" value={newSenior.emergencyContact} onChange={handleSeniorChange} required />
             </div>
             <div className="form-group">
-              <select name="caregiverID" className="form-control" onChange={handleSeniorChange} required>
+              <textarea className="form-control" name="medicalHistory" placeholder="Medical History" value={newSenior.medicalHistory} onChange={handleSeniorChange} />
+            </div>
+            <div className="form-group">
+              <select name="caregiverID" className="form-control" value={newSenior.caregiverID} onChange={handleSeniorChange} required>
                 <option value="">Assign Caregiver</option>
-                {caregivers.map(caregiver => (
-                  <option key={caregiver.CaregiverID} value={caregiver.CaregiverID}>{caregiver.Name}</option>
+                {caregivers.map((caregiver) => (
+                  <option key={caregiver.CaregiverID} value={caregiver.CaregiverID}>
+                    {caregiver.Name}
+                  </option>
                 ))}
               </select>
             </div>
             <button type="submit" className="btn btn-primary">Add Senior</button>
           </form>
         </div>
-      </ div>
+      </div>
 
-      {/* Add Caregiver Card */}
       <div className="card mb-4">
         <div className="card-body">
           <h3>Add Caregiver</h3>
           <form onSubmit={addCaregiver}>
             <div className="form-group">
-              <input type="text" className="form-control" name="name" placeholder="Name" onChange={handleCaregiverChange} required />
+              <input type="text" className="form-control" name="name" placeholder="Name" value={newCaregiver.name} onChange={handleCaregiverChange} required />
             </div>
             <div className="form-group">
-              <input type="text" className="form-control" name="contactDetails" placeholder="Contact Details" onChange={handleCaregiverChange} required />
+              <input type="text" className="form-control" name="contactDetails" placeholder="Contact Details" value={newCaregiver.contactDetails} onChange={handleCaregiverChange} required />
             </div>
             <button type="submit" className="btn btn-primary">Add Caregiver</button>
           </form>
@@ -137,6 +171,7 @@ const AdminDashboard = () => {
                     <th>Contact Details</th>
                     <th>Address</th>
                     <th>Emergency Contact</th>
+                    <th>Medical History</th>
                     <th>Caregiver ID</th>
                   </tr>
                 </thead>
@@ -150,6 +185,7 @@ const AdminDashboard = () => {
                       <td>{senior.ContactDetails}</td>
                       <td>{senior.Address}</td>
                       <td>{senior.EmergencyContact}</td>
+                      <td>{senior.MedicalHistory}</td>
                       <td>{senior.CaregiverID}</td>
                     </tr>
                   ))}

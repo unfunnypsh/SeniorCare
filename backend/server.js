@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 
+
 // Initialize express app
 const app = express();
 
@@ -26,6 +27,7 @@ db.connect((err) => {
   }
   console.log('Connected to the MySQL database.');
 });
+
 
 // API to fetch all seniors
 app.get('/api/admin/reports', (req, res) => {
@@ -93,14 +95,15 @@ app.get('/api/caregiver/profile', (req, res) => {
 
 // API to add a new senior
 app.post('/api/admin/senior', (req, res) => {
-  const { name, age, gender, contactDetails, address, emergencyContact, caregiverID } = req.body;
+  console.log('Incoming request body:', req.body);
+  const { name, age, gender, contactDetails, address, emergencyContact, caregiverID,medicalHistory } = req.body;
   const query = `
-    INSERT INTO Seniors (Name, Age, Gender, ContactDetails, Address, EmergencyContact, CaregiverID)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO Seniors (Name, Age, Gender, ContactDetails, Address, EmergencyContact, CaregiverID, MedicalHistory)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `;
   db.query(
     query,
-    [name, age, gender, contactDetails, address, emergencyContact, caregiverID],
+    [name, age, gender, contactDetails, address, emergencyContact, caregiverID,medicalHistory],
     (err, result) => {
       if (err) {
         console.error(err);
@@ -115,20 +118,18 @@ app.post('/api/admin/senior', (req, res) => {
 // API to add a new caregiver
 app.post('/api/admin/caregiver', (req, res) => {
   const { name, contactDetails } = req.body;
-  const query = `
-    INSERT INTO Caregivers (Name, ContactDetails)
-    VALUES (?, ?)
-  `;
+  const query = 
+    `INSERT INTO Caregivers (Name, ContactDetails)
+    VALUES (?, ?)`;
   db.query(query, [name, contactDetails], (err, result) => {
     if (err) {
-      console.error(err);
+      console.error('Error inserting caregiver:', err);
       res.status(500).send('Error adding caregiver.');
       return;
     }
     res.status(201).send('Caregiver added successfully.');
   });
 });
-
 
 
   
@@ -419,6 +420,50 @@ app.post('/api/update-progress-status', (req, res) => {
               res.status(200).send('updated progress status successfully.');
           });
       });
+  });
+});
+
+// First API: Fetch data for a specific senior
+app.get('/api/senior/:seniorID/report', (req, res) => {
+  const seniorID = req.params.seniorID;
+
+  const query = `
+    SELECT 
+      pa.ParticipationID,
+      pa.ParticipationDate AS ActivityParticipationDate,
+      p.PhysicalID,
+      p.PhysicalName,
+      p.Frequency,
+      p.Duration,
+      p.AssignedDate AS PhysicalAssignedDate,
+      p.Intensity,
+      ct.TaskID,
+      ct.TaskName,
+      ct.AssignedDate AS CognitiveAssignedDate,
+      ct.CompletionStatus,
+      si.InteractionID,
+      si.InteractionType,
+      si.InteractionDate,
+      si.Details
+    FROM 
+      ActivityParticipation pa
+    LEFT JOIN 
+      PhysicalActivities p ON pa.PhysicalActivityID = p.PhysicalID AND pa.SeniorID = p.SeniorID
+    LEFT JOIN 
+      CognitiveTasks ct ON pa.CognitiveTaskID = ct.TaskID AND pa.SeniorID = ct.SeniorID
+    LEFT JOIN 
+      SocialInteractions si ON pa.SeniorID = si.SeniorID
+    WHERE 
+      pa.SeniorID = ?;
+  `;
+
+  db.query(query, [seniorID], async (err, results) => {
+    if (err) {
+      console.error('Error fetching data:', err);
+      return res.status(500).send('Error fetching data.');
+    }
+
+    res.json(results); // Send the raw data as JSON response
   });
 });
 
