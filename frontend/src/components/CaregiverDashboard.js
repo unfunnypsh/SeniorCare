@@ -74,6 +74,7 @@ const CaregiverDashboard = () => {
     try {
       await axios.post(`http://localhost:5000/api/${endpoint}`, data);
       alert(message);
+      await handleCleanRedundantActivity();
     } catch (error) {
       console.error(`Error submitting ${endpoint}:`, error);
     }
@@ -81,7 +82,7 @@ const CaregiverDashboard = () => {
   const handleCleanRedundantActivity = async () => {
     try {
       await axios.post('http://localhost:5000/api/clean-activity-participation');
-      alert('Redundant activity participation cleaned successfully.');
+      console.log("Success");
     } catch (error) {
       console.error('Error cleaning redundant activity participation:', error);
       alert('Error cleaning redundant activity participation.');
@@ -136,6 +137,13 @@ const updateProgressStatus = async () => {
     alert('Error updating progress status.');
   }
 };
+
+const handleInsertAndUpdateProgress=()=>{
+  handleInsertProgress();
+  setTimeout(()=>{
+    updateProgressStatus();
+  },500);
+}
 
 
   return (
@@ -351,8 +359,8 @@ const updateProgressStatus = async () => {
     )}
 
     <div className="mb-4">
-      <button className="btn btn-danger" onClick={handleCleanRedundantActivity}>Clean Redundant Activity Participation</button>
-      <button className="btn btn-primary" onClick={handleInsertProgress}>Insert Progress</button>
+
+      <button className="btn btn-primary" onClick={handleInsertAndUpdateProgress}>Insert Progress</button>
     </div>
 
     <div>
@@ -394,8 +402,6 @@ const updateProgressStatus = async () => {
         />
       </div>
       <button className="btn btn-warning" onClick={updateNotes}>Update Notes</button>
-      <h3 className="mt-4">Update Progress Status</h3>
-      <button className="btn btn-warning" onClick={updateProgressStatus}>Update Progress Status</button>
     </div>
   </div>
   );

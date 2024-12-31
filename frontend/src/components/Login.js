@@ -10,6 +10,7 @@ const Login = () => {
   const [name, setName] = useState(''); // For caregiver login
   const [caregiverId, setCaregiverId] = useState(''); // For caregiver login
   const [loading, setLoading] = useState(false);
+  const [caregiverData, setCaregiverData] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -34,6 +35,7 @@ const Login = () => {
         if (role === 'admin') {
           navigate('/admin-dashboard');
         } else if (role === 'caregiver') {
+          setCaregiverData(response.data.caregiver);
           navigate('/caregiver-dashboard');
         }
       } else {
