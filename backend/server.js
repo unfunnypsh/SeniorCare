@@ -164,21 +164,23 @@ app.get('/api/seniors/:caregiverID', (req, res) => {
     });
   });
   
-// Add physical activity
-app.post('/api/caregiver/physical-activity', (req, res) => {
-    const { physicalName, frequency, duration, intensity, assignedDate, seniorID } = req.body;
+  app.post('/api/caregiver/physical-activity', (req, res) => {
+    const { physicalName, duration, intensity, assignedDate, seniorID, completedStatus } = req.body;
   
     if (!physicalName) {
       res.status(400).send('Physical Name is required.');
       return;
     }
   
+    // Map completedStatus to 1 (true) or 0 (false)
+    const completed = completedStatus ? 1 : 0;
+  
     const query = `
-      INSERT INTO PhysicalActivities (PhysicalName, SeniorID, Frequency, Duration, AssignedDate, Intensity)
+      INSERT INTO PhysicalActivities (PhysicalName, SeniorID, Duration, AssignedDate, Intensity, Completed)
       VALUES (?, ?, ?, ?, ?, ?)
     `;
-    
-    db.query(query, [physicalName, seniorID, frequency, duration, assignedDate, intensity], (err) => {
+  
+    db.query(query, [physicalName, seniorID, duration, assignedDate, intensity, completed], (err) => {
       if (err) {
         console.error('Error adding physical activity:', err);
         res.status(500).send('Error adding physical activity.');
@@ -188,22 +190,32 @@ app.post('/api/caregiver/physical-activity', (req, res) => {
     });
   });
   
-  // Add cognitive task
-  app.post('/api/caregiver/cognitive-task', (req, res) => {
-    const { taskName, assignedDate, completionStatus, seniorID } = req.body;
-    const query = `
-      INSERT INTO CognitiveTasks (TaskName, AssignedDate, CompletionStatus, SeniorID)
-      VALUES (?, ?, ?, ?)
-    `;
-    db.query(query, [taskName, assignedDate, completionStatus, seniorID], (err) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send('Error adding cognitive task.');
-        return;
-      }
-      res.status(201).send('Cognitive task added successfully.');
-    });
+
+  
+// Add cognitive task
+app.post('/api/caregiver/cognitive-task', (req, res) => {
+  const { taskName, assignedDate, completionStatus, seniorID, timeSpent, difficultyLevel } = req.body;
+
+  // Validate DifficultyLevel
+  const validDifficultyLevels = ['Easy', 'Medium', 'Hard'];
+  if (!validDifficultyLevels.includes(difficultyLevel)) {
+    return res.status(400).send('Invalid difficulty level. Must be one of Easy, Medium, or Hard.');
+  }
+
+  const query = `
+    INSERT INTO CognitiveTasks (TaskName, AssignedDate, CompletionStatus, SeniorID, TimeSpent, DifficultyLevel)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `;
+  db.query(query, [taskName, assignedDate, completionStatus, seniorID, timeSpent, difficultyLevel], (err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error adding cognitive task.');
+      return;
+    }
+    res.status(201).send('Cognitive task added successfully.');
   });
+});
+
   
 // API to execute clean-up procedure
 app.post('/api/clean-activity-participation', (req, res) => {
@@ -237,31 +249,35 @@ app.post('/api/clean-activity-participation', (req, res) => {
 
 // API to fetch physical activities for a senior by ID
 app.get('/api/senior/:seniorID/physical-activities', (req, res) => {
-    const seniorID = req.params.seniorID;
-    const query = 'SELECT * FROM PhysicalActivities WHERE SeniorID = ?';
-    db.query(query, [seniorID], (err, results) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send('Error fetching physical activities.');
-        return;
-      }
-      res.json(results);
-    });
-  });
+  const seniorID = req.params.seniorID;
+  const query = 'SELECT PhysicalID, PhysicalName, SeniorID, Duration, AssignedDate, Intensity, Completed FROM PhysicalActivities WHERE SeniorID = ?';
   
-  // API to fetch cognitive tasks for a senior by ID
-  app.get('/api/senior/:seniorID/cognitive-tasks', (req, res) => {
-    const seniorID = req.params.seniorID;
-    const query = 'SELECT * FROM CognitiveTasks WHERE SeniorID = ?';
-    db.query(query, [seniorID], (err, results) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send('Error fetching cognitive tasks.');
-        return;
-      }
-      res.json(results);
-    });
+  db.query(query, [seniorID], (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error fetching physical activities.');
+      return;
+    }
+    res.json(results);
   });
+});
+
+  
+// API to fetch cognitive tasks for a senior by ID
+app.get('/api/senior/:seniorID/cognitive-tasks', (req, res) => {
+  const seniorID = req.params.seniorID;
+  const query = 'SELECT TaskID, TaskName, AssignedDate, CompletionStatus, TimeSpent, DifficultyLevel FROM CognitiveTasks WHERE SeniorID = ?';
+  
+  db.query(query, [seniorID], (err, results) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error fetching cognitive tasks.');
+      return;
+    }
+    res.json(results);
+  });
+});
+
   
   // API to fetch social interactions for a senior by ID
   app.get('/api/senior/:seniorID/social-interactions', (req, res) => {

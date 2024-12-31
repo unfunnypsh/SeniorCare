@@ -58,22 +58,22 @@ const SeniorDashboard = () => {
 const fetchPhysicalActivities = async (seniorID) => {
     try {
         const response = await axios.get(`http://localhost:5000/api/senior/${seniorID}/physical-activities`);
-        console.log('Physical Activities:', response.data); // Log the response
         setPhysicalActivity(response.data);
     } catch (error) {
         console.error('Error fetching physical activities:', error);
     }
 };
 
-const fetchCognitiveTasks = async (seniorID) => {
+  // Fetch cognitive tasks for a selected senior
+  const fetchCognitiveTasks = async (seniorID) => {
     try {
-        const response = await axios.get(`http://localhost:5000/api/senior/${seniorID}/cognitive-tasks`);
-        console.log('Cognitive Tasks:', response.data); // Log the response
-        setCognitiveActivity(response.data);
+      const response = await axios.get(`http://localhost:5000/api/senior/${seniorID}/cognitive-tasks`);
+      console.log('Cognitive Tasks:', response.data); // Log the response for debugging
+      setCognitiveActivity(response.data);
     } catch (error) {
-        console.error('Error fetching cognitive tasks:', error);
+      console.error('Error fetching cognitive tasks:', error);
     }
-};
+  };
 
 const fetchSocialInteractions = async (seniorID) => {
     try {
@@ -160,8 +160,6 @@ async function fetchSeniorReport(seniorID) {
             {selectedSenior && (
                 <div className="card mb-4">
                     <div className="card-body">
-                        
-
                         <h3>Physical Activities</h3>
                         <button className="btn btn-info" onClick={() => setShowPhysicalActivities(!showPhysicalActivities)}>
                             {showPhysicalActivities ? 'Hide' : 'Show'} Physical Activities
@@ -171,9 +169,9 @@ async function fetchSeniorReport(seniorID) {
                                 <thead>
                                     <tr>
                                         <th>Activity</th>
-                                        <th>Frequency</th>
                                         <th>Date</th>
                                         <th>Duration</th>
+                                        <th>Completed</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -181,9 +179,9 @@ async function fetchSeniorReport(seniorID) {
                                         physicalActivity.map((activity, index) => (
                                             <tr key={index}>
                                                 <td>{activity.PhysicalName}</td>
-                                                <td>{activity.Frequency}</td>
                                                 <td>{new Date(activity.AssignedDate).toLocaleDateString()}</td>
                                                 <td>{activity.Duration} minutes</td>
+                                                <td>{activity.Completed ? 'Yes' : 'No'}</td>
                                             </tr>
                                         ))
                                     ) : (
@@ -195,36 +193,43 @@ async function fetchSeniorReport(seniorID) {
                             </table>
                         )}
 
-                        <h3>Cognitive Tasks</h3>
-                        <button className="btn btn-info" onClick={() => setShowCognitiveTasks(!showCognitiveTasks)}>
-                            {showCognitiveTasks ? 'Hide' : 'Show'} Cognitive Tasks
-                        </button>
-                        {showCognitiveTasks && (
-                            <table className="table table-bordered mt-3">
-                                <thead>
-                                    <tr>
-                                        <th>Task Name</th>
-                                        <th>Date</th>
-                                        <th>Duration</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {cognitiveActivity.length > 0 ? (
-                                        cognitiveActivity.map((task, index) => (
-                                            <tr key={index}>
-                                                <td>{task.TaskName}</td>
-                                                <td>{new Date(task.AssignedDate).toLocaleDateString()}</td>
-                                                <td>{task.Duration} minutes</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3">No cognitive tasks found.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
+      {/* Button for toggling cognitive tasks visibility */}
+      <h3>Cognitive Tasks</h3>
+      <button className="btn btn-info" onClick={() => setShowCognitiveTasks(!showCognitiveTasks)}>
+        {showCognitiveTasks ? 'Hide' : 'Show'} Cognitive Tasks
+      </button>
+
+      {/* Show cognitive tasks if toggled on */}
+      {showCognitiveTasks && (
+        <table className="table table-bordered mt-3">
+          <thead>
+            <tr>
+              <th>Task Name</th>
+              <th>Date</th>
+              <th>Duration (minutes)</th>
+              <th>Completion Status</th>
+              <th>Difficulty Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cognitiveActivity.length > 0 ? (
+              cognitiveActivity.map((task, index) => (
+                <tr key={index}>
+                  <td>{task.TaskName}</td>
+                  <td>{new Date(task.AssignedDate).toLocaleDateString()}</td>
+                  <td>{task.TimeSpent} minutes</td>
+                  <td>{task.CompletionStatus === 1 ? 'Completed' : 'Incomplete'}</td>
+                  <td>{task.DifficultyLevel}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5">No cognitive tasks found.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      )}
 
                         <h3>Social Interactions</h3>
                         <button className="btn btn-info" onClick={() => setShowSocialInteractions(!showSocialInteractions)}>

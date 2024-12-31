@@ -18,16 +18,20 @@ const CaregiverDashboard = () => {
   });
   const [physicalActivity, setPhysicalActivity] = useState({
     physicalName: '',
-    frequency: '',
     duration: '',
     assignedDate: '',
     intensity: 'Low',
+    completedStatus: false,
   });
+  
   const [cognitiveTask, setCognitiveTask] = useState({
-    taskName: '',
-    assignedDate: '',
-    completionStatus: false,
+    taskName: '',           
+    assignedDate: '',      
+    completionStatus: false, 
+    timeSpent: '',           
+    difficultyLevel: 'Easy', 
   });
+  
 
   const fetchCaregiverProfile = async () => {
     try {
@@ -56,6 +60,11 @@ const CaregiverDashboard = () => {
     stateSetter((prevState) => ({ ...prevState, [e.target.name]: e.target.value }));
   };
 
+  const handlePhysicalCheckboxChange = (e, setter) => {
+    setter((prevState) => ({ ...prevState, completedStatus: e.target.checked }));
+  };
+  
+   
   const handleCheckboxChange = (e) => {
     setCognitiveTask((prevState) => ({ ...prevState, completionStatus: e.target.checked }));
   };
@@ -209,103 +218,134 @@ const updateProgressStatus = async () => {
           </form>
 
           <h4 className="mt-4">Physical Activity</h4>
-          <form
-            onSubmit={(e) =>
-              handleFormSubmit(e, 'caregiver/physical-activity', { ...physicalActivity, seniorID: selectedSenior.SeniorID }, 'Physical Activity added')
-            }
-          >
-            <div className="mb-3">
-              <input
-                type="text"
-                name="physicalName"
-                className="form-control"
-                placeholder="Physical Name"
-                onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                type="text"
-                name="frequency"
-                className="form-control"
-                placeholder="Frequency"
-                onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                type="number"
-                name="duration"
-                className="form-control"
-                placeholder="Duration (minutes)"
-                onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                type="date"
-                name="assignedDate"
-                className="form-control"
-                onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <select
-                name="intensity"
-                className="form-select"
-                onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-                value={physicalActivity.intensity}
-                required
-              >
-                <option value="Low">Low</option>
-                <option value="Moderate">Moderate</option>
-                <option value="High">High</option>
-              </select>
-            </div>
-            <button type="submit" className="btn btn-success">Add Physical Activity</button>
-          </form>
+<form
+  onSubmit={(e) =>
+    handleFormSubmit(e, 'caregiver/physical-activity', { ...physicalActivity, seniorID: selectedSenior.SeniorID }, 'Physical Activity added')
+  }
+>
+  <div className="mb-3">
+    <input
+      type="text"
+      name="physicalName"
+      className="form-control"
+      placeholder="Physical Name"
+      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+      required
+    />
+  </div>
+  <div className="mb-3">
+    <input
+      type="number"
+      name="duration"
+      className="form-control"
+      placeholder="Duration (minutes)"
+      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+      required
+    />
+  </div>
+  <div className="mb-3">
+    <input
+      type="date"
+      name="assignedDate"
+      className="form-control"
+      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+      required
+    />
+  </div>
+  <div className="mb-3">
+    <select
+      name="intensity"
+      className="form-select"
+      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+      value={physicalActivity.intensity}
+      required
+    >
+      <option value="Low">Low</option>
+      <option value="Moderate">Moderate</option>
+      <option value="High">High</option>
+    </select>
+  </div>
+  <div className="mb-3 form-check">
+    <input
+      type="checkbox"
+      name="completedStatus"
+      className="form-check-input"
+      checked={physicalActivity.completedStatus}
+      onChange={(e) => handlePhysicalCheckboxChange(e, setPhysicalActivity)}
+    />
+    <label className="form-check-label">Completed</label>
+  </div>
+  <button type="submit" className="btn btn-success">Add Physical Activity</button>
+</form>
 
           <h4 className="mt-4">Cognitive Task</h4>
-          <form
-            onSubmit={(e) =>
-              handleFormSubmit(e, 'caregiver/cognitive-task', { ...cognitiveTask, seniorID: selectedSenior.SeniorID }, 'Cognitive Task added')
-            }
+      <form
+        onSubmit={(e) =>
+          handleFormSubmit(
+            e, 
+            'caregiver/cognitive-task', 
+            { 
+              ...cognitiveTask, 
+              seniorID: selectedSenior.SeniorID 
+            }, 
+            'Cognitive Task added'
+          )
+        }
+      >
+        <div className="mb-3">
+          <input
+            type="text"
+            name="taskName"
+            className="form-control"
+            placeholder="Task Name"
+            onChange={(e) => handleInputChange(e, setCognitiveTask)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="date"
+            name="assignedDate"
+            className="form-control"
+            onChange={(e) => handleInputChange(e, setCognitiveTask)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <input
+            type="number"
+            name="timeSpent"
+            className="form-control"
+            placeholder="Time Spent (minutes)"
+            onChange={(e) => handleInputChange(e, setCognitiveTask)}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <select
+            name="difficultyLevel"
+            className="form-select"
+            onChange={(e) => handleInputChange(e, setCognitiveTask)}
+            value={cognitiveTask.difficultyLevel}
+            required
           >
-            <div className="mb-3">
-              <input
-                type="text"
-                name="taskName"
-                className="form-control"
-                placeholder="Task Name"
-                onChange={(e) => handleInputChange(e, setCognitiveTask)}
-                required
-              />
-            </div>
-            <div className="mb-3">
-              <input
-                type="date"
-                name="assignedDate"
-                className="form-control"
-                onChange={(e) => handleInputChange(e, setCognitiveTask)}
-                required
-              />
-            </div>
-<div className="mb-3 form-check">
-              <input
-                type="checkbox"
-                name="completionStatus"
-                className="form-check-input"
-                checked={cognitiveTask.completionStatus}
-                onChange={handleCheckboxChange}
-              />
-              <label className="form-check-label">Completed</label>
-            </div>
-            <button type="submit" className="btn btn-success">Add Cognitive Task</button>
-          </form>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+          </select>
+        </div>
+        <div className="mb-3 form-check">
+          <input
+            type="checkbox"
+            name="completionStatus"
+            className="form-check-input"
+            checked={cognitiveTask.completionStatus}
+            onChange={handleCheckboxChange}
+          />
+          <label className="form-check-label">Completed</label>
+        </div>
+        <button type="submit" className="btn btn-success">Add Cognitive Task</button>
+      </form>
         </div>
       </div>
     )}
