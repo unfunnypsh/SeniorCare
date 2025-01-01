@@ -19,6 +19,8 @@ const SeniorDashboard = () => {
     const [participationData, setParticipationData] = useState([]);
     const [progressData, setProgressData] = useState([]);
 
+    const [selectedDate, setSelectedDate] = useState('');
+
     // State variables for toggling sections
     const [showPhysicalActivities, setShowPhysicalActivities] = useState(false);
     const [showCognitiveTasks, setShowCognitiveTasks] = useState(false);
@@ -129,7 +131,14 @@ async function fetchSeniorReport(seniorID) {
     }
   }
 
+  const handleDateChange = (e) => {
+    setSelectedDate(e.target.value);
+};
 
+const filterByDate = (data, dateField) => {
+    if (!selectedDate) return data; // No date filter applied
+    return data.filter(item => new Date(item[dateField]).toLocaleDateString() === new Date(selectedDate).toLocaleDateString());
+};
 
     const handleSelectSenior = (senior) => {
         setSelectedSenior(senior);
@@ -143,163 +152,181 @@ async function fetchSeniorReport(seniorID) {
     
     return (
         <div className="container mt-5">
-            <h1 className="text-center mb-4">Senior Dashboard</h1>
-            <h3>Seniors List</h3>
-            <ul className="list-group mb-4">
-                {seniors.map((senior) => (
-                    <li
-                        key={senior.SeniorID}
-                        className="list-group-item list-group-item-action"
-                        onClick={() => handleSelectSenior(senior)}
-                    >
-                        {senior.Name} - {senior.Age} years old
-                    </li>
-                ))}
-            </ul>
+        <h1 className="text-center mb-4 text-primary">Senior Dashboard</h1>
 
-            {selectedSenior && (
-                <div className="card mb-4">
-                    <div className="card-body">
-                        <h3>Physical Activities</h3>
-                        <button className="btn btn-info" onClick={() => setShowPhysicalActivities(!showPhysicalActivities)}>
-                            {showPhysicalActivities ? 'Hide' : 'Show'} Physical Activities
-                        </button>
-                        {showPhysicalActivities && (
-                            <table className="table table-bordered mt-3">
-                                <thead>
-                                    <tr>
-                                        <th>Activity</th>
-                                        <th>Date</th>
-                                        <th>Duration</th>
-                                        <th>Completed</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {physicalActivity.length > 0 ? (
-                                        physicalActivity.map((activity, index) => (
-                                            <tr key={index}>
-                                                <td>{activity.PhysicalName}</td>
-                                                <td>{new Date(activity.AssignedDate).toLocaleDateString()}</td>
-                                                <td>{activity.Duration} minutes</td>
-                                                <td>{activity.Completed ? 'Yes' : 'No'}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="4">No physical activities found.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
-
-      {/* Button for toggling cognitive tasks visibility */}
-      <h3>Cognitive Tasks</h3>
-      <button className="btn btn-info" onClick={() => setShowCognitiveTasks(!showCognitiveTasks)}>
-        {showCognitiveTasks ? 'Hide' : 'Show'} Cognitive Tasks
-      </button>
-
-      {/* Show cognitive tasks if toggled on */}
-      {showCognitiveTasks && (
-        <table className="table table-bordered mt-3">
-          <thead>
-            <tr>
-              <th>Task Name</th>
-              <th>Date</th>
-              <th>Duration (minutes)</th>
-              <th>Completion Status</th>
-              <th>Difficulty Level</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cognitiveActivity.length > 0 ? (
-              cognitiveActivity.map((task, index) => (
-                <tr key={index}>
-                  <td>{task.TaskName}</td>
-                  <td>{new Date(task.AssignedDate).toLocaleDateString()}</td>
-                  <td>{task.TimeSpent} minutes</td>
-                  <td>{task.CompletionStatus === 1 ? 'Completed' : 'Incomplete'}</td>
-                  <td>{task.DifficultyLevel}</td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5">No cognitive tasks found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      )}
-
-                        <h3>Social Interactions</h3>
-                        <button className="btn btn-info" onClick={() => setShowSocialInteractions(!showSocialInteractions)}>
-                            {showSocialInteractions ? 'Hide' : 'Show'} Social Interactions
-                        </button>
-                        {showSocialInteractions && (
-                            <table className="table table-bordered mt-3">
-                                <thead>
-                                    <tr>
-                                        <th>Type</th>
-                                        <th>Date</th>
-                                        <th>Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {socialActivity.length > 0 ? (
-                                        socialActivity.map((interaction, index) => (
-                                            <tr key={index}>
-                                                <td>{interaction.InteractionType}</td>
-                                                <td>{new Date(interaction.InteractionDate).toLocaleDateString()}</td>
-                                                <td>{interaction.Details}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan="3">No social interactions found.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
-
-                        <h3>Progress Tracking</h3>
-                        <button className="btn btn-info" onClick={() => setShowProgressTracking(!showProgressTracking)}>
-                            {showProgressTracking ? 'Hide' : 'Show'} Progress Tracking
-                        </button>
-                        {showProgressTracking && (
-                            <table className="table table-bordered mt-3">
-                                <thead>
-                                    <tr>
-                                        <th>Senior ID</th>
-                                        <th>Date</th>
-                                        <th>Progress Status</th>
-                                        <th>Notes</th>
-                                        <th>Progress Score</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {progressData.length > 0 ? (
-                                        progressData.map((item, index) => (
-                                            <tr key={index}>
-                                                <td>{item.SeniorID}</td>
-                                                <td>{new Date(item.Date).toLocaleDateString()}</td>
-                                                <td>{item.ProgressStatus}</td>
-                                                <td>{item.Notes}</td>
-                                                <td>{item.ProgressScore}</td>
-                                            </tr>
-                                        ))
-                                    ) : (
-                                        <tr>
-                                            <td colSpan ="5">No progress tracking found.</td>
-                                        </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                </div>
-            )}
+        {/* Date Filter */}
+        <div className="mb-4">
+            <label htmlFor="dateFilter" className="form-label">Filter by Date</label>
+            <input
+                type="date"
+                id="dateFilter"
+                className="form-control"
+                value={selectedDate}
+                onChange={handleDateChange}
+            />
         </div>
+
+        {/* Seniors List */}
+        <h3 className="text-secondary">Seniors List</h3>
+        <ul className="list-group mb-4">
+            {seniors.map((senior) => (
+                <li
+                    key={senior.SeniorID}
+                    className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                    onClick={() => handleSelectSenior(senior)}
+                    style={{ cursor: "pointer" }}
+                >
+                    <span>{senior.Name} - {senior.Age} years old</span>
+                    <span className="badge bg-primary rounded-pill">Details</span>
+                </li>
+            ))}
+        </ul>
+
+        {/* Selected Senior Details */}
+        {selectedSenior && (
+            <div className="card mb-4 shadow-sm">
+                <div className="card-body">
+                    <h3 className="text-primary">Physical Activities</h3>
+                    <button className="btn btn-info mb-3" onClick={() => setShowPhysicalActivities(!showPhysicalActivities)}>
+                        {showPhysicalActivities ? 'Hide' : 'Show'} Physical Activities
+                    </button>
+                    {showPhysicalActivities && (
+                        <table className="table table-bordered mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Activity</th>
+                                    <th>Date</th>
+                                    <th>Duration</th>
+                                    <th>Completed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filterByDate(physicalActivity, 'AssignedDate').length > 0 ? (
+                                    filterByDate(physicalActivity, 'AssignedDate').map((activity, index) => (
+                                        <tr key={index}>
+                                            <td>{activity.PhysicalName}</td>
+                                            <td>{new Date(activity.AssignedDate).toLocaleDateString()}</td>
+                                            <td>{activity.Duration} minutes</td>
+                                            <td>{activity.Completed ? 'Yes' : 'No'}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="4">No physical activities found for selected date.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+
+                    {/* Cognitive Tasks */}
+                    <h3 className="mt-4 text-secondary">Cognitive Tasks</h3>
+                    <button className="btn btn-info mb-3" onClick={() => setShowCognitiveTasks(!showCognitiveTasks)}>
+                        {showCognitiveTasks ? 'Hide' : 'Show'} Cognitive Tasks
+                    </button>
+                    {showCognitiveTasks && (
+                        <table className="table table-bordered mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Task Name</th>
+                                    <th>Date</th>
+                                    <th>Duration (minutes)</th>
+                                    <th>Completion Status</th>
+                                    <th>Difficulty Level</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filterByDate(cognitiveActivity, 'AssignedDate').length > 0 ? (
+                                    filterByDate(cognitiveActivity, 'AssignedDate').map((task, index) => (
+                                        <tr key={index}>
+                                            <td>{task.TaskName}</td>
+                                            <td>{new Date(task.AssignedDate).toLocaleDateString()}</td>
+                                            <td>{task.TimeSpent} minutes</td>
+                                            <td>{task.CompletionStatus === 1 ? 'Completed' : 'Incomplete'}</td>
+                                            <td>{task.DifficultyLevel}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="5">No cognitive tasks found for selected date.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+
+                    {/* Social Interactions */}
+                    <h3 className="mt-4 text-secondary">Social Interactions</h3>
+                    <button className="btn btn-info mb-3" onClick={() => setShowSocialInteractions(!showSocialInteractions)}>
+                        {showSocialInteractions ? 'Hide' : 'Show'} Social Interactions
+                    </button>
+                    {showSocialInteractions && (
+                        <table className="table table-bordered mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Date</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filterByDate(socialActivity, 'InteractionDate').length > 0 ? (
+                                    filterByDate(socialActivity, 'InteractionDate').map((interaction, index) => (
+                                        <tr key={index}>
+                                            <td>{interaction.InteractionType}</td>
+                                            <td>{new Date(interaction.InteractionDate).toLocaleDateString()}</td>
+                                            <td>{interaction.Details}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="3">No social interactions found for selected date.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+
+                    {/* Progress Tracking */}
+                    <h3 className="mt-4 text-secondary">Progress Tracking</h3>
+                    <button className="btn btn-info mb-3" onClick={() => setShowProgressTracking(!showProgressTracking)}>
+                        {showProgressTracking ? 'Hide' : 'Show'} Progress Tracking
+                    </button>
+                    {showProgressTracking && (
+                        <table className="table table-bordered mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Senior ID</th>
+                                    <th>Date</th>
+                                    <th>Progress Status</th>
+                                    <th>Notes</th>
+                                    <th>Progress Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filterByDate(progressData, 'Date').length > 0 ? (
+                                    filterByDate(progressData, 'Date').map((item, index) => (
+                                        <tr key={index}>
+                                            <td>{item.SeniorID}</td>
+                                            <td>{new Date(item.Date).toLocaleDateString()}</td>
+                                            <td>{item.ProgressStatus}</td>
+                                            <td>{item.Notes}</td>
+                                            <td>{item.ProgressScore}</td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan="5">No progress tracking found for selected date.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+            </div>
+        )}
+    </div>
+
     );
 };
 

@@ -4,6 +4,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const CaregiverDashboard = () => {
   const [caregiverID, setCaregiverID] = useState('');
+  const [caregiverName, setCaregiverName] = useState('');
+  const [caregiverGmail, setCaregiverGmail] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [caregiver, setCaregiver] = useState(null);
   const [seniors, setSeniors] = useState([]);
   const [progressData, setProgressData] = useState([]);
@@ -32,7 +35,38 @@ const CaregiverDashboard = () => {
     difficultyLevel: 'Easy', 
   });
   
+  // Caregiver login function
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5000/api/caregiver/login', {
+        name: caregiverName,
+        caregiverId: caregiverID,
+        gmailID: caregiverGmail,
+      });
+      if (response.data.success) {
+        setIsAuthenticated(true);
+        fetchCaregiverProfile();
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      alert('Login failed, please try again.');
+    }
+  };
 
+
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredSeniors = seniors.filter(senior => 
+      senior.Name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  
+    const handleSearch = (e) => {
+      setSearchQuery(e.target.value);
+    };
+  
   const fetchCaregiverProfile = async () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/caregiver/profile?caregiverID=${caregiverID}`);
@@ -148,262 +182,350 @@ const handleInsertAndUpdateProgress=()=>{
 
   return (
     <div className="container mt-5">
-    <h2 className="text-center mb-4">Caregiver Dashboard</h2>
-
-    <div className="mb-4">
-      <input
-        type="text"
-        className="form-control"
-        placeholder="Enter Caregiver ID"
-        value={caregiverID}
-        onChange={(e) => setCaregiverID(e.target.value)}
-      />
-      <button className="btn btn-primary mt-2" onClick={fetchCaregiverProfile}>Fetch Caregiver Profile</button>
-    </div>
-
-    {caregiver && (
-      <div className="alert alert-info">
-        <h3>Welcome, {caregiver.Name}</h3>
-      </div>
-    )}
-
-    <h3>Select Senior</h3>
-    <ul class Name="list-group mb-4">
-      {seniors.map((senior) => (
-        <li key={senior.SeniorID} className="list-group-item" onClick={() => handleSelectSenior(senior)}>
-          {senior.Name} - {senior.Age} years old
-        </li>
-      ))}
-    </ul>
-
-    {selectedSenior && (
-      <div className="card mb-4">
-        <div className="card-body">
-        <h2 className="card-title">Selected Senior Details</h2>
-                        <p><strong>Name:</strong> {selectedSenior.Name}</p>
-                        <p><strong>Age:</strong> {selectedSenior.Age}</p>
-                        <p><strong>Gender:</strong> {selectedSenior.Gender}</p>
-                        <p><strong>Contact Details:</strong> {selectedSenior.ContactDetails}</p>
-                        <p><strong>Address:</strong> {selectedSenior.Address}</p>
-                        <p><strong>Emergency Contact:</strong> {selectedSenior.EmergencyContact}</p>
-          <h3>Update Records for {selectedSenior.Name}</h3>
-
-          <h4>Social Interaction</h4>
-          <form
-            onSubmit={(e) =>
-              handleFormSubmit(e, 'caregiver/social-interaction', { ...socialInteraction, seniorID: selectedSenior.SeniorID }, 'Social Interaction added')
-            }
-          >
+      {/* Caregiver Login Form */}
+      {!isAuthenticated && (
+        <div>
+          <h2 className="text-center mb-4 text-primary">Caregiver Login</h2>
+          <form onSubmit={handleLogin}>
             <div className="mb-3">
               <input
                 type="text"
-                name="interactionType"
                 className="form-control"
-                placeholder="Interaction Type"
-                onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                placeholder="Caregiver Name"
+                value={caregiverName}
+                onChange={(e) => setCaregiverName(e.target.value)}
                 required
               />
             </div>
             <div className="mb-3">
               <input
-                type="date"
-                name="interactionDate"
+                type="text"
                 className="form-control"
-                onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                placeholder="Caregiver ID"
+                value={caregiverID}
+                onChange={(e) => setCaregiverID(e.target.value)}
                 required
               />
             </div>
             <div className="mb-3">
-              <textarea
-                name="details"
+              <input
+                type="email"
                 className="form-control"
-                placeholder="Details"
-                onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                placeholder="Caregiver Gmail ID"
+                value={caregiverGmail}
+                onChange={(e) => setCaregiverGmail(e.target.value)}
                 required
               />
             </div>
-            <button type="submit" className="btn btn-success">Add Social Interaction</button>
+            <button className="btn btn-primary w-auto" type="submit">
+              Login
+            </button>
           </form>
+        </div>
+      )}
 
-          <h4 className="mt-4">Physical Activity</h4>
-<form
-  onSubmit={(e) =>
-    handleFormSubmit(e, 'caregiver/physical-activity', { ...physicalActivity, seniorID: selectedSenior.SeniorID }, 'Physical Activity added')
-  }
->
+      {/* Caregiver Dashboard (Visible after login) */}
+      {isAuthenticated && (
+        <div>
+          <h2 className="text-center mb-4 text-primary">Caregiver Dashboard</h2>
+
+          {/* Caregiver Info */}
+          {caregiver && (
+            <div className="alert alert-info text-center">
+              <h3>Welcome, {caregiver.Name}</h3>
+            </div>
+          )}
+
+          {/* Senior Selection */}
+          <h3 className="text-secondary">Select Senior</h3>
+          <ul className="list-group mb-4">
+            {seniors.map((senior) => (
+              <li
+                key={senior.SeniorID}
+                className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+                onClick={() => handleSelectSenior(senior)}
+                style={{ cursor: 'pointer' }}
+              >
+                {senior.Name}
+                <span className="badge bg-primary rounded-pill">{senior.Age} yrs</span>
+              </li>
+            ))}
+          </ul>
+
+  {/* Selected Senior Details */}
+  {selectedSenior && (
+    <div className="card mb-4 shadow">
+      <div className="card-header bg-primary text-white">
+        <h4>Selected Senior: {selectedSenior.Name}</h4>
+      </div>
+      <div className="card-body">
+              <p><strong>Age:</strong> {selectedSenior.Age}</p>
+              <p><strong>Gender:</strong> {selectedSenior.Gender}</p>
+              <p><strong>Contact:</strong> {selectedSenior.ContactDetails}</p>
+              <p><strong>Address:</strong> {selectedSenior.Address}</p>
+              <p><strong>Emergency Contact:</strong> {selectedSenior.EmergencyContact}</p>
+              <p><strong>Medical History:</strong> {selectedSenior.MedicalHistory}</p>
+            </div>
+          </div>
+  )}
+
+  {/* Forms */}
+  {selectedSenior && (
+        <div className="row">
+        {/* Social Interaction Card */}
+        <div className="col-md-4 mb-4">
+          <div className="card shadow">
+            <div className="card-body">
+              <h4 className="text-primary">Social Interaction</h4>
+              <form
+                onSubmit={(e) =>
+                  handleFormSubmit(e, 'caregiver/social-interaction', { ...socialInteraction, seniorID: selectedSenior.SeniorID }, 'Social Interaction added')
+                }
+              >
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="interactionType"
+                    className="form-control col-sm-8 mx-auto"
+                    placeholder="Interaction Type"
+                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="date"
+                    name="interactionDate"
+                    className="form-control col-sm-8 mx-auto"
+                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <textarea
+                    name="details"
+                    className="form-control col-sm-8 mx-auto"
+                    placeholder="Details"
+                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                    required
+                  />
+                </div>
+                <button type="submit" className="btn btn-success w-auto mx-auto d-block">Add Social Interaction</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Physical Activity Card */}
+        <div className="col-md-4 mb-4">
+          <div className="card shadow">
+            <div className="card-body">
+              <h4 className="text-primary">Physical Activity</h4>
+              <form
+                onSubmit={(e) =>
+                  handleFormSubmit(e, 'caregiver/physical-activity', { ...physicalActivity, seniorID: selectedSenior.SeniorID }, 'Physical Activity added')
+                }
+              >
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="physicalName"
+                    className="form-control col-sm-8 mx-auto"
+                    placeholder="Physical Activity Name"
+                    onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="number"
+                    name="duration"
+                    className="form-control col-sm-8 mx-auto"
+                    placeholder="Duration (minutes)"
+                    onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="date"
+                    name="assignedDate"
+                    className="form-control col-sm-8 mx-auto"
+                    onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <select
+                    name="intensity"
+                    className="form-select col-sm-8 mx-auto"
+                    onChange={(e) => handleInputChange(e, setPhysicalActivity)}
+                    value={physicalActivity.intensity}
+                    required
+                  >
+                    <option value="Low">Low</option>
+                    <option value="Moderate">Moderate</option>
+                    <option value="High">High</option>
+                  </select>
+                </div>
+                <div className="form-check mb-3">
+                  <input
+                    type="checkbox"
+                    name="completedStatus"
+                    className="form-check-input"
+                    checked={physicalActivity.completedStatus}
+                    onChange={(e) => handlePhysicalCheckboxChange(e, setPhysicalActivity)}
+                  />
+                  <label className="form-check-label">Completed</label>
+                </div>
+                <button type="submit" className="btn btn-success w-auto">Add Physical Activity</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        {/* Cognitive Task Card */}
+        <div className="col-md-4 mb-4">
+          <div className="card shadow">
+            <div className="card-body">
+              <h4 className="text-primary">Cognitive Task</h4>
+              <form
+                onSubmit={(e) =>
+                  handleFormSubmit(e, 'caregiver/cognitive-task', { ...cognitiveTask, seniorID: selectedSenior.SeniorID }, 'Cognitive Task added')
+                }
+              >
+                <div className="mb-3">
+                  <input
+                    type="text"
+                    name="taskName"
+                    className="form-control col-sm-8 mx-auto"
+                    placeholder="Task Name"
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="date"
+                    name="assignedDate"
+                    className="form-control col-sm-8 mx-auto"
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <input
+                    type="number"
+                    name="timeSpent"
+                    className="form-control col-sm-8 mx-auto"
+                    placeholder="Time Spent (minutes)"
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <select
+                    name="difficultyLevel"
+                    className="form-select col-sm-8 mx-auto"
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    value={cognitiveTask.difficultyLevel}
+                    required
+                  >
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+                <div className="form-check mb-3">
+                  <input
+                    type="checkbox"
+                    name="completionStatus"
+                    className="form-check-input"
+                    checked={cognitiveTask.completionStatus}
+                    onChange={handleCheckboxChange}
+                  />
+                  <label className="form-check-label">Completed</label>
+                </div>
+                <button type="submit" className="btn btn-success w-auto">Add Cognitive Task</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+  )}
+
+  {/* Progress Tracking */}
+  <div className="my-4">
+  <h3 className="text-secondary">Progress Tracking Data</h3>
+  <button className="btn btn-info w-auto mb-3" onClick={handleInsertAndUpdateProgress}>
+    Fetch Progress Data
+  </button>
+
+        {/* Progress Tracking Table */}
+        {selectedSenior && (
+          <div className="table-responsive">
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <th>Progress ID</th>
+                  <th>Senior ID</th>
+                  <th>Date</th>
+                  <th>Progress Status</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {progressData
+                  .filter(progress => progress.SeniorID === selectedSenior.SeniorID)
+                  .map((progress) => (
+                    <tr key={progress.ProgressID}>
+                      <td>{progress.ProgressID}</td>
+                      <td>{progress.SeniorID}</td>
+                      <td>{new Date(progress.Date).toLocaleDateString()}</td>
+                      <td>{progress.ProgressStatus}</td>
+                      <td>{progress.ProgressScore}</td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+  <h4 className="mt-4 text-secondary">Update Progress Notes</h4>
   <div className="mb-3">
     <input
       type="text"
-      name="physicalName"
-      className="form-control"
-      placeholder="Physical Name"
-      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-      required
+      className="form-control col-sm-8 mx-auto"
+      placeholder="Progress ID"
+      value={progressID}
+      onChange={(e) => setProgressID(e.target.value)}
     />
   </div>
   <div className="mb-3">
     <input
-      type="number"
-      name="duration"
-      className="form-control"
-      placeholder="Duration (minutes)"
-      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-      required
+      type="text"
+      className="form-control col-sm-8 mx-auto"
+      placeholder="Senior ID"
+      value={seniorID}
+      onChange={(e) => setSeniorID(e.target.value)}
     />
   </div>
   <div className="mb-3">
-    <input
-      type="date"
-      name="assignedDate"
-      className="form-control"
-      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-      required
+    <textarea
+      className="form-control col-sm-8 mx-auto"
+      placeholder="Enter your notes here"
+      value={notes}
+      onChange={(e) => setNotes(e.target.value)}
     />
   </div>
-  <div className="mb-3">
-    <select
-      name="intensity"
-      className="form-select"
-      onChange={(e) => handleInputChange(e, setPhysicalActivity)}
-      value={physicalActivity.intensity}
-      required
-    >
-      <option value="Low">Low</option>
-      <option value="Moderate">Moderate</option>
-      <option value="High">High</option>
-    </select>
-  </div>
-  <div className="mb-3 form-check">
-    <input
-      type="checkbox"
-      name="completedStatus"
-      className="form-check-input"
-      checked={physicalActivity.completedStatus}
-      onChange={(e) => handlePhysicalCheckboxChange(e, setPhysicalActivity)}
-    />
-    <label className="form-check-label">Completed</label>
-  </div>
-  <button type="submit" className="btn btn-success">Add Physical Activity</button>
-</form>
+  <button className="btn btn-warning w-auto" onClick={updateNotes}>
+    Update Notes
+  </button>
+</div>
+</div>
+  )}
+</div>
 
-          <h4 className="mt-4">Cognitive Task</h4>
-      <form
-        onSubmit={(e) =>
-          handleFormSubmit(
-            e, 
-            'caregiver/cognitive-task', 
-            { 
-              ...cognitiveTask, 
-              seniorID: selectedSenior.SeniorID 
-            }, 
-            'Cognitive Task added'
-          )
-        }
-      >
-        <div className="mb-3">
-          <input
-            type="text"
-            name="taskName"
-            className="form-control"
-            placeholder="Task Name"
-            onChange={(e) => handleInputChange(e, setCognitiveTask)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <input
-            type="date"
-            name="assignedDate"
-            className="form-control"
-            onChange={(e) => handleInputChange(e, setCognitiveTask)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <input
-            type="number"
-            name="timeSpent"
-            className="form-control"
-            placeholder="Time Spent (minutes)"
-            onChange={(e) => handleInputChange(e, setCognitiveTask)}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <select
-            name="difficultyLevel"
-            className="form-select"
-            onChange={(e) => handleInputChange(e, setCognitiveTask)}
-            value={cognitiveTask.difficultyLevel}
-            required
-          >
-            <option value="Easy">Easy</option>
-            <option value="Medium">Medium</option>
-            <option value="Hard">Hard</option>
-          </select>
-        </div>
-        <div className="mb-3 form-check">
-          <input
-            type="checkbox"
-            name="completionStatus"
-            className="form-check-input"
-            checked={cognitiveTask.completionStatus}
-            onChange={handleCheckboxChange}
-          />
-          <label className="form-check-label">Completed</label>
-        </div>
-        <button type="submit" className="btn btn-success">Add Cognitive Task</button>
-      </form>
-        </div>
-      </div>
-    )}
-
-    <div className="mb-4">
-
-      <button className="btn btn-primary" onClick={handleInsertAndUpdateProgress}>Insert Progress</button>
-    </div>
-
-    <div>
-      <h3>Progress Tracking Data</h3>
-      <button className="btn btn-info mb-3" onClick={fetchProgressTrackingData}>Fetch Progress Data</button>
-      <ul className="list-group">
-        {progressData.map((progress) => (
-          <li key={progress.ID} className="list-group-item">
-            ProgressID: {progress.ProgressID}, Senior ID: {progress.SeniorID}, Date: {new Date(progress.Date).toLocaleDateString()}, Progress Status: {progress.ProgressStatus}, Notes: {progress.Notes}
-          </li>
-        ))}
-      </ul>
-
-      <h3 className="mt-4">Update Progress Tracking Notes</h3>
-      <div className="mb-3">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Progress ID"
-          value={progressID}
-          onChange={(e) => setProgressID(e.target.value)}
-        />
-      </div>
-      <div className="mb-3">
-        <input
-          type="text"
-          className="form-control"
-          placeholder="Senior ID"
-          value={seniorID}
-          onChange={(e) => setSeniorID(e.target.value)}
-        />
-      </div>
-      <div className="mb-3">
-        <textarea
-          className="form-control"
-          placeholder="Enter your notes here"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      </div>
-      <button className="btn btn-warning" onClick={updateNotes}>Update Notes</button>
-    </div>
-  </div>
   );
 };
 

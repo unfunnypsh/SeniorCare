@@ -117,11 +117,11 @@ app.post('/api/admin/senior', (req, res) => {
 
 // API to add a new caregiver
 app.post('/api/admin/caregiver', (req, res) => {
-  const { name, contactDetails } = req.body;
+  const { name, contactDetails, gmailID } = req.body;
   const query = 
-    `INSERT INTO Caregivers (Name, ContactDetails)
-    VALUES (?, ?)`;
-  db.query(query, [name, contactDetails], (err, result) => {
+    `INSERT INTO Caregivers (Name, ContactDetails, GmailID)
+    VALUES (?, ?, ?)`;
+  db.query(query, [name, contactDetails, gmailID], (err, result) => {
     if (err) {
       console.error('Error inserting caregiver:', err);
       res.status(500).send('Error adding caregiver.');
@@ -350,19 +350,19 @@ app.post('/api/admin/login', (req, res) => {
 
 // Caregiver login endpoint
 app.post('/api/caregiver/login', (req, res) => {
-    const { name, caregiverId } = req.body;
-    const query = 'SELECT * FROM Caregivers WHERE name = ? AND caregiverId = ?'; // Adjust table name and fields as necessary
-    db.query(query, [name, caregiverId], (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ success: false, message: 'Error during login' });
-        }
-        if (results.length > 0) {
-            return res.status(200).json({ success: true });
-        } else {
-            return res.status(401).json({ success: false, message: 'Invalid caregiver credentials' });
-        }
-    });
+  const { name, caregiverId, gmailID } = req.body;
+  const query = 'SELECT * FROM Caregivers WHERE name = ? AND caregiverId = ? AND GmailID = ?'; // Adjust table name and fields as necessary
+  db.query(query, [name, caregiverId, gmailID], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Error during login' });
+    }
+    if (results.length > 0) {
+      return res.status(200).json({ success: true });
+    } else {
+      return res.status(401).json({ success: false, message: 'Invalid caregiver credentials' });
+    }
+  });
 });
 
 app.post('/api/caregiver/insert-progress', (req, res) => {
@@ -482,6 +482,70 @@ app.get('/api/senior/:seniorID/report', (req, res) => {
     res.json(results); // Send the raw data as JSON response
   });
 });
+
+app.post('/api/admin/remove-senior', (req, res) => {
+  const { seniorID } = req.body; // Assuming you send seniorID in the request body
+
+  // First, disable safe updates
+  db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
+      if (err) {
+          console.error('Error disabling safe updates:', err);
+          return res.status(500).send('Error disabling SQL_SAFE_UPDATES.');
+      }
+
+      // Delete the senior entry with the specific ID
+      db.query('DELETE FROM Seniors WHERE SeniorID = ?;', [seniorID], (err, results) => {
+          if (err) {
+              console.error('Error deleting senior:', err);
+              return res.status(500).send('Error deleting senior.');
+          }
+
+          // Finally, re-enable safe updates
+          db.query('SET SQL_SAFE_UPDATES = 1;', (err, results) => {
+              if (err) {
+                  console.error('Error re-enabling safe updates:', err);
+                  return res.status(500).send('Error re-enabling SQL_SAFE_UPDATES.');
+              }
+
+              // Respond with success message
+              res.status(200).send('Senior removed successfully.');
+          });
+      });
+  });
+});
+
+app.post('/api/admin/remove-caregiver', (req, res) => {
+  const { caregiverID } = req.body; // Assuming you send caregiverID in the request body
+
+  // First, disable safe updates
+  db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
+      if (err) {
+          console.error('Error disabling safe updates:', err);
+          return res.status(500).send('Error disabling SQL_SAFE_UPDATES.');
+      }
+
+      // Delete the caregiver entry with the specific ID
+      db.query('DELETE FROM Caregivers WHERE CaregiverID = ?;', [caregiverID], (err, results) => {
+          if (err) {
+              console.error('Error deleting caregiver:', err);
+              return res.status(500).send('Error deleting caregiver.');
+          }
+
+          // Finally, re-enable safe updates
+          db.query('SET SQL_SAFE_UPDATES = 1;', (err, results) => {
+              if (err) {
+                  console.error('Error re-enabling safe updates:', err);
+                  return res.status(500).send('Error re-enabling SQL_SAFE_UPDATES.');
+              }
+
+              // Respond with success message
+              res.status(200).send('Caregiver removed successfully.');
+          });
+      });
+  });
+});
+
+
 
   // Start the server
   const PORT = process.env.PORT || 5000;
