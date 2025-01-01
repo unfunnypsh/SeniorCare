@@ -530,3 +530,5 @@ const handleInsertAndUpdateProgress=()=>{
 };
 
 export default CaregiverDashboard;
+
+/* make it such that after login theres 3 rows first row contains the select senior card that has a search filter insdide it to search seniors by name and the selected senior card with their info..2nd row contains the already existing 3 cards that are in proper format dont change that... in  3rd row  ive the card with progress title and fetch progress button. it takes 2 columns space and in the 3rd column space ive the update notes card on the left remove the senior  */
