@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./LandingPage.css"; // Include a custom CSS file for advanced styles
 import { Link } from "react-router-dom";
+import Footer from "./extra/Footer";
 
 const Nav = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -196,32 +197,6 @@ const Reviews = () => {
   );
 };
 
-const Footer = () => (
-  <footer className="footer bg-dark text-white py-4">
-    <div className="container text-center">
-      <p>
-        Contact us at{" "}
-        <a href="mailto:support@seniorcare.com" className="text-primary">
-          support@seniorcare.com
-        </a>
-      </p>
-      <p>
-        Follow us on{" "}
-        <a href="#" className="text-primary">
-          Twitter
-        </a>,{" "}
-        <a href="#" className="text-primary">
-          Facebook
-        </a>, and{" "}
-        <a href="#" className="text-primary">
-          Instagram
-        </a>.
-      </p>
-      <p>&copy; 2024 SeniorCare. All Rights Reserved.</p>
-    </div>
-  </footer>
-);
-
 const LandingPage = () => {
   return (
     <main>
@@ -230,7 +205,7 @@ const LandingPage = () => {
       <Services />
       <About />
       <Reviews />
-      <Footer />
+      <Footer/>
     </main>
   );
 };

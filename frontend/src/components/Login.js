@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Footer from "./extra/Footer";
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -32,6 +33,7 @@ const Login = () => {
   };
 
   return (
+    <div>
     <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
       <div className="card shadow-lg border-0" style={{ width: '100%', maxWidth: '400px' }}>
         <div className="card-body p-4">
@@ -82,7 +84,7 @@ const Login = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div><Footer/></div>
   );
 };
 

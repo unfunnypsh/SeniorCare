@@ -4,6 +4,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import seniorImage from './senior-admin.jpg';
 import caregiverImage from './caregiver-admin.jpg';
 import './AdminDashboard.css';
+import Footer from "./extra/Footer";
 
 const AdminDashboard = () => {
   const [seniors, setSeniors] = useState([]);
@@ -145,6 +146,7 @@ const AdminDashboard = () => {
   };
 
   return (
+    <div>
     <div className="container mt-5 admin-dashboard">
       <h2 className="mb-4 text-center">Admin Dashboard</h2>
 
@@ -484,7 +486,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       )}
-    </div>
+    </div><Footer/></div>
   );
 };
 export default AdminDashboard;

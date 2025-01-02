@@ -366,20 +366,29 @@ app.post('/api/caregiver/login', (req, res) => {
 });
 
 app.post('/api/senior/login', (req, res) => {
-  const { name, seniorId} = req.body;
-  const query = 'SELECT * FROM Seniors WHERE name = ? AND SeniorId = ?'; // Adjust table name and fields as necessary
+  const { name, seniorId } = req.body;
+  const query = 'SELECT * FROM Seniors WHERE name = ? AND SeniorId = ?';
   db.query(query, [name, seniorId], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({ success: false, message: 'Error during login' });
-    }
-    if (results.length > 0) {
-      return res.status(200).json({ success: true });
-    } else {
-      return res.status(401).json({ success: false, message: 'Invalid caregiver credentials' });
-    }
+      if (err) {
+          console.error(err);
+          return res.status(500).json({ success: false, message: 'Error during login' });
+      }
+      if (results.length > 0) {
+          const senior = results[0]; // Assuming only one result is returned
+          return res.status(200).json({ 
+              success: true, 
+              senior: { 
+                  SeniorID: senior.SeniorID,
+                  CaregiverID: senior.CaregiverID,
+                  Name: senior.Name 
+              }
+          });
+      } else {
+          return res.status(401).json({ success: false, message: 'Invalid senior credentials' });
+      }
   });
 });
+
 
 app.post('/api/caregiver/insert-progress', (req, res) => {
   const query = 'CALL InsertProgressTracking()';

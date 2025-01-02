@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './CaregiverDashboard.css';
+import Footer from "./extra/Footer";
 
 const CaregiverDashboard = () => {
   const [caregiverID, setCaregiverID] = useState('');
@@ -265,6 +266,7 @@ const sendMessage = async (e) => {
 
 
   return (
+    <div>
     <div className="container mt-5">
       {/* Caregiver Login Form */}
       {!isAuthenticated && (
@@ -702,7 +704,9 @@ const sendMessage = async (e) => {
   </div>
   
 )}
-</div>
+
+</div><Footer /></div>
+
 
   );
 };
