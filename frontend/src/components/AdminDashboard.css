@@ -1,0 +1,137 @@
+/* Global styles for the Admin Dashboard */
+body {
+    background-color: #f8f9fc; /* Subtle light-gray background */
+    font-family: 'Arial', sans-serif; /* Clean font for the whole dashboard */
+}
+
+.admin-dashboard {
+    padding: 18px; /* 90% of the original padding */
+}
+
+.admin-dashboard h2 {
+    color: #495057; /* Darker gray for heading */
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 1.8rem; /* Adjusted font size */
+}
+
+.admin-dashboard .card {
+    border: none;
+    border-radius: 9px; /* 90% of the original border radius */
+    box-shadow: 0 3.6px 7.2px rgba(0, 0, 0, 0.1); /* Scaled shadow */
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    overflow: hidden;
+}
+
+.admin-dashboard .card:hover {
+    transform: translateY(-4.5px); /* Slightly scaled hover effect */
+    box-shadow: 0 7.2px 14.4px rgba(0, 0, 0, 0.2); /* Scaled shadow on hover */
+}
+
+.admin-dashboard .card-header {
+    background: linear-gradient(135deg, #007bff, #0056b3); /* Blue gradient */
+    color: white;
+    padding: 9px 18px; /* Scaled padding */
+    font-weight: bold;
+}
+
+/* Caregiver card header green gradient */
+.admin-dashboard .card.border-warning .card-header {
+    background: linear-gradient(135deg, #34c759, #1c7d40); /* Green gradient for Caregiver card */
+    color: white;
+}
+
+/* Seniors card header blue gradient */
+.admin-dashboard .card.border-info .card-header {
+    background: linear-gradient(135deg, #007bff, #0056b3); /* Blue gradient for Seniors card */
+    color: white;
+}
+
+.admin-dashboard .senior-card .card-header {
+    background: linear-gradient(135deg, #007bff, #0056b3); /* Blue gradient */
+}
+
+.admin-dashboard .caregiver-card .card-header {
+    background: linear-gradient(135deg, #28a745, #1e7e34); /* Green gradient */
+}
+
+.admin-dashboard .form-control {
+    border-radius: 4.5px; /* Scaled border radius */
+    height: 40.5px; /* 90% of the original height */
+    font-size: 0.9rem; /* Scaled font size */
+    border: 1px solid #ced4da;
+    padding: 9px; /* Scaled padding */
+}
+
+.admin-dashboard .form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.18rem rgba(0, 123, 255, 0.25);
+}
+
+.admin-dashboard .btn {
+    font-weight: bold;
+    border-radius: 4.5px; /* Scaled border radius */
+    width: 90%; /* Full width for better alignment */
+    padding: 10.8px; /* 90% of the original padding */
+    font-size: 0.9rem; /* Scaled font size */
+    text-transform: uppercase;
+}
+
+.admin-dashboard .btn-primary {
+    background-color: #007bff;
+    border: none;
+    transition: background-color 0.27s ease, transform 0.18s ease;
+}
+
+.admin-dashboard .btn-primary:hover {
+    background-color: #0056b3;
+    transform: scale(1.0); /* Scaled hover effect */
+}
+
+.admin-dashboard .btn-hide-show,
+.admin-dashboard .btn-outline-light.btn-sm {
+    font-size: 0.81rem; /* Adjusted font size */
+    padding: 3.6px 7.2px; /* Scaled padding */
+    border-radius: 2.7px; /* Rounded corners */
+    width: auto; /* Prevent stretching */
+}
+
+.admin-dashboard .btn-success {
+    background-color: #28a745;
+    border: none;
+    transition: background-color 0.27s ease, transform 0.18s ease;
+}
+
+.admin-dashboard .btn-success:hover {
+    background-color: #1e7e34;
+    transform: scale(1.0); /* Scaled hover effect */
+}
+
+.admin-dashboard .btn-danger {
+    background-color: #dc3545;
+    border: none;
+    transition: background-color 0.27s ease, transform 0.18s ease;
+}
+
+.admin-dashboard .btn-danger:hover {
+    background-color: #c82333;
+    transform: scale(1.0); /* Scaled hover effect */
+}
+
+.admin-dashboard .table th {
+    background-color: #f1f3f5; /* Light gray background for table headers */
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #495057; /* Dark gray for text */
+}
+
+.admin-dashboard .table td {
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .admin-dashboard .card-body {
+        flex-direction: column;
+        padding: 9px; /* Scaled padding */
+    }
+}

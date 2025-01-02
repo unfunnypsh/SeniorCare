@@ -1,0 +1,56 @@
+/* CaregiverLogin.css */
+body {
+  background-color: #f3f2f2;
+}
+
+.login-left {
+  background-color: #6c757d; /* Fallback color */
+  background-image: url("caregiver-login.jpg");
+  background-size: cover;
+  background-position: center;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+  height: 80vh; /* Ensure it takes full height */
+}
+
+.login-form {
+  background: #ffffff;
+  border-radius: 4px;
+  box-shadow: 0px 2px 6px -1px rgba(0, 0, 0, 0.12);
+  height: 100%; /* Make it take full height */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the content vertically */
+}
+
+h2 {
+  font-weight: 600;
+}
+
+input {
+  border-radius: 4px;
+  height: 45px; /* Set a fixed height for input fields */
+}
+
+.btn-primary {
+  background-color: rgb(64, 79, 242);
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: rgb(113, 161, 234);
+}
+  
+  /* Individual card styling */
+  
+  /* Ensure the buttons are full width */
+  .btn {
+    width: 100%; /* Make buttons full width */
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .card {
+      max-width: 100%; /* On smaller screens, cards take full width */
+    }
+  }

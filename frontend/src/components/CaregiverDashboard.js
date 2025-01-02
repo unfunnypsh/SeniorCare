@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './CaregiverDashboard.css';
 
 const CaregiverDashboard = () => {
   const [caregiverID, setCaregiverID] = useState('');
@@ -13,7 +14,10 @@ const CaregiverDashboard = () => {
   const [progressID, setProgressID] = useState('');
   const [seniorID, setSeniorID] = useState('');
   const [notes, setNotes] = useState('');
+  const [filteredSeniors, setFilteredSeniors] = useState(seniors);
   const [selectedSenior, setSelectedSenior] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
   const [socialInteraction, setSocialInteraction] = useState({
     interactionType: '',
     interactionDate: '',
@@ -44,8 +48,10 @@ const CaregiverDashboard = () => {
         caregiverId: caregiverID,
         gmailID: caregiverGmail,
       });
+  
       if (response.data.success) {
         setIsAuthenticated(true);
+        setCaregiverID(caregiverID); // Ensure caregiverID is set correctly
         fetchCaregiverProfile();
       } else {
         alert(response.data.message);
@@ -55,13 +61,27 @@ const CaregiverDashboard = () => {
       alert('Login failed, please try again.');
     }
   };
+  
+  useEffect(() => {
+    setFilteredSeniors(seniors);
+  }, [seniors]);
 
+  const handleSearchChange = (event) => {
+    const query = event.target.value;
+    setSearchQuery(query);
+  
+    const filtered = seniors.filter(senior => 
+      senior.Name.toLowerCase().includes(query.toLowerCase())
+    );
+  
+    setFilteredSeniors(filtered);
+  };
 
     const [searchQuery, setSearchQuery] = useState('');
 
-    const filteredSeniors = seniors.filter(senior => 
-      senior.Name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // const filteredSeniors = seniors.filter(senior => 
+    //   senior.Name.toLowerCase().includes(searchQuery.toLowerCase())
+    // );
   
     const handleSearch = (e) => {
       setSearchQuery(e.target.value);
@@ -85,10 +105,28 @@ const CaregiverDashboard = () => {
       console.error('Error fetching seniors:', error);
     }
   };
-
-  const handleSelectSenior = (senior) => {
+  const fetchCaregiver = async (caregiverID) => {
+    try {
+        const response = await axios.get(
+            `http://localhost:5000/api/caregiver/profile?caregiverID=${caregiverID}`
+        );
+        setCaregiver(response.data);
+    } catch (error) {
+        console.error("Error fetching caregiver details:", error);
+    }
+};
+  const handleSelectSenior = async (senior) => {
     setSelectedSenior(senior);
+    await fetchCaregiver(senior.CaregiverID);
+    setCaregiverID(senior.CaregiverID);
+    if (!senior || !senior.SeniorID) {
+      console.error('Selected senior is invalid:', senior);
+      return;
+    }
+    fetchMessages(senior.SeniorID, caregiverID); // Pass both seniorID and caregiverID
   };
+  
+  
 
   const handleInputChange = (e, stateSetter) => {
     stateSetter((prevState) => ({ ...prevState, [e.target.name]: e.target.value }));
@@ -113,6 +151,7 @@ const CaregiverDashboard = () => {
       console.error(`Error submitting ${endpoint}:`, error);
     }
   };
+
   const handleCleanRedundantActivity = async () => {
     try {
       await axios.post('http://localhost:5000/api/clean-activity-participation');
@@ -122,6 +161,7 @@ const CaregiverDashboard = () => {
       alert('Error cleaning redundant activity participation.');
     }
   };
+
   const handleInsertProgress = async () => {
     try {
       await axios.post('http://localhost:5000/api/caregiver/insert-progress');
@@ -142,7 +182,7 @@ const CaregiverDashboard = () => {
   };
 
   const updateNotes = async () => {
-    if (!progressID || !seniorID || notes === '') {
+    if (!progressID || !selectedSenior || notes === '') {
         alert('ProgressID, SeniorID, and Notes are required.');
         return;
     }
@@ -150,7 +190,7 @@ const CaregiverDashboard = () => {
     try {
         const response = await axios.put('http://localhost:5000/api/progress-tracking/update', {
             progressID,
-            seniorID,
+            seniorID: selectedSenior.SeniorID, // Ensure you're sending the correct Senior ID
             notes,
         });
         alert(response.data);
@@ -178,13 +218,63 @@ const handleInsertAndUpdateProgress=()=>{
     updateProgressStatus();
   },500);
 }
+const fetchMessages = async (seniorID, caregiverID) => {
+  try {
+    // Ensure that both seniorID and caregiverID are correct
+    const response = await axios.get(`http://localhost:5000/api/messages/${seniorID}/${caregiverID}`);
+    setMessages(response.data);  // Update state with the messages from the API
+  } catch (error) {
+    console.error('Error fetching messages:', error);
+  }
+};
+
+
+
+const sendMessage = async (e) => {
+  e.preventDefault();
+
+  // Check if caregiverID and selectedSenior are properly set
+  if (!caregiverID || !selectedSenior || !selectedSenior.SeniorID || !newMessage) {
+    alert('Please ensure a senior is selected and a caregiver is logged in.');
+    return;
+  }
+
+  // Log to verify the correct values
+  console.log('Sending message:', {
+    senderID: caregiverID,  // Should be set from caregiver's login
+    receiverID: selectedSenior.SeniorID,  // Should be set when a senior is selected
+    messageText: newMessage,  // Ensure message text is set
+  });
+
+  try {
+    const response = await axios.post('http://localhost:5000/api/messages', {
+      senderID: caregiverID,  // Ensure caregiverID is correctly passed
+      receiverID: selectedSenior.SeniorID,  // Ensure SeniorID is correctly passed
+      messageText: newMessage,  // Ensure message text is correctly passed
+    });
+
+    // After successful send, clear the input and reload messages
+    setNewMessage('');  // Clear the message input
+    fetchMessages(selectedSenior.SeniorID, caregiverID);  // Refresh messages after sending
+  } catch (error) {
+    console.error('Error sending message:', error);  // Log error for debugging
+    alert('Failed to send message. Please try again.');
+  }
+};
+
 
 
   return (
     <div className="container mt-5">
       {/* Caregiver Login Form */}
       {!isAuthenticated && (
-        <div>
+    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center login-container">
+    <div className="row w-100">
+      <div className="col-md-6 login-left d-none d-md-flex align-items-center justify-content-center">
+        {/* Background image will be applied via CSS */}
+      </div>
+      <div className="col-md-6">
+        <div className="login-form p-4">
           <h2 className="text-center mb-4 text-primary">Caregiver Login</h2>
           <form onSubmit={handleLogin}>
             <div className="mb-3">
@@ -217,104 +307,151 @@ const handleInsertAndUpdateProgress=()=>{
                 required
               />
             </div>
-            <button className="btn btn-primary w-auto" type="submit">
+            <button className="btn btn-primary w-100" type="submit">
               Login
             </button>
           </form>
         </div>
+      </div>
+    </div>
+  </div>
       )}
 
       {/* Caregiver Dashboard (Visible after login) */}
       {isAuthenticated && (
-        <div>
-          <h2 className="text-center mb-4 text-primary">Caregiver Dashboard</h2>
+  <div>
+    <h2 className="text-center mb-4 text-primary">Caregiver Dashboard</h2>
 
-          {/* Caregiver Info */}
-          {caregiver && (
-            <div className="alert alert-info text-center">
-              <h3>Welcome, {caregiver.Name}</h3>
-            </div>
-          )}
+    {/* Caregiver Info */}
+    {caregiver && (
+      <div className="alert alert-info text-center">
+        <h3>Welcome, {caregiver.Name}</h3>
+      </div>
+    )}
 
-          {/* Senior Selection */}
-          <h3 className="text-secondary">Select Senior</h3>
-          <ul className="list-group mb-4">
-            {seniors.map((senior) => (
-              <li
-                key={senior.SeniorID}
-                className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                onClick={() => handleSelectSenior(senior)}
-                style={{ cursor: 'pointer' }}
-              >
-                {senior.Name}
-                <span className="badge bg-primary rounded-pill">{senior.Age} yrs</span>
-              </li>
-            ))}
-          </ul>
-
-  {/* Selected Senior Details */}
-  {selectedSenior && (
+    {/* First Row: Senior Selection with Search Filter */}
+    <div className="row mb-4">
+  <div className="col-md-6">
     <div className="card mb-4 shadow">
       <div className="card-header bg-primary text-white">
-        <h4>Selected Senior: {selectedSenior.Name}</h4>
+        <h3 className="mb-0">Select Senior</h3>
       </div>
       <div className="card-body">
-              <p><strong>Age:</strong> {selectedSenior.Age}</p>
-              <p><strong>Gender:</strong> {selectedSenior.Gender}</p>
-              <p><strong>Contact:</strong> {selectedSenior.ContactDetails}</p>
-              <p><strong>Address:</strong> {selectedSenior.Address}</p>
-              <p><strong>Emergency Contact:</strong> {selectedSenior.EmergencyContact}</p>
-              <p><strong>Medical History:</strong> {selectedSenior.MedicalHistory}</p>
-            </div>
-          </div>
-  )}
+        <input
+          type="text"
+          className="form-control mb-3"
+          placeholder="Search by Name"
+          value={searchQuery}
+          onChange={handleSearchChange}
+        />
+        <ul className="list-group" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+          {filteredSeniors.map((senior) => (
+            <li
+              key={senior.SeniorID}
+              className="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+              onClick={() => handleSelectSenior(senior)}
+              style={{ cursor: 'pointer' }}
+            >
+              {senior.Name}
+              <span className="badge bg-primary rounded-pill">{senior.Age} yrs</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  </div>
 
-  {/* Forms */}
-  {selectedSenior && (
-        <div className="row">
+  {/* Selected Senior Details */}
+  <div className="col-md-6">
+    {selectedSenior && (
+      <div className="card mb-4 shadow">
+        <div className="card-header bg-primary text-white">
+          <h4>Selected Senior: {selectedSenior.Name}</h4>
+        </div>
+        <div className="card-body">
+          <p><strong>Age:</strong> {selectedSenior.Age}</p>
+          <p><strong>Gender:</strong> {selectedSenior.Gender}</p>
+          <p><strong>Contact:</strong> {selectedSenior.ContactDetails}</p>
+          <p><strong>Address:</strong> {selectedSenior.Address}</p>
+          <p><strong>Emergency Contact:</strong> {selectedSenior.EmergencyContact}</p>
+          <p><strong>Medical History:</strong> {selectedSenior.MedicalHistory}</p>
+        </div>
+      </div>
+    )}
+  </div>
+</div>
+
+    {/* Second Row: Existing Cards */}
+    {selectedSenior && (
+      <div className="row mb-4">
         {/* Social Interaction Card */}
         <div className="col-md-4 mb-4">
           <div className="card shadow">
             <div className="card-body">
-              <h4 className="text-primary">Social Interaction</h4>
+              <h4 className="text-primary">Cognitive Task</h4>
               <form
                 onSubmit={(e) =>
-                  handleFormSubmit(e, 'caregiver/social-interaction', { ...socialInteraction, seniorID: selectedSenior.SeniorID }, 'Social Interaction added')
+                  handleFormSubmit(e, 'caregiver/cognitive-task', { ...cognitiveTask, seniorID: selectedSenior.SeniorID }, 'Cognitive Task added')
                 }
               >
                 <div className="mb-3">
                   <input
                     type="text"
-                    name="interactionType"
+                    name="taskName"
                     className="form-control col-sm-8 mx-auto"
-                    placeholder="Interaction Type"
-                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                    placeholder="Task Name"
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
                     required
                   />
                 </div>
                 <div className="mb-3">
                   <input
                     type="date"
-                    name="interactionDate"
+                    name="assignedDate"
                     className="form-control col-sm-8 mx-auto"
-                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
                     required
                   />
                 </div>
                 <div className="mb-3">
-                  <textarea
-                    name="details"
+                  <input
+                    type="number"
+                    name="timeSpent"
                     className="form-control col-sm-8 mx-auto"
-                    placeholder="Details"
-                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
+                    placeholder="Time Spent (minutes)"
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
                     required
                   />
                 </div>
-                <button type="submit" className="btn btn-success w-auto mx-auto d-block">Add Social Interaction</button>
+                <div className="mb-3">
+                  <select
+                    name="difficultyLevel"
+                    className="form-select col-sm-8 mx-auto"
+                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    value={cognitiveTask.difficultyLevel}
+                    required
+                  >
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+                <div className="form-check mb-3">
+                  <input
+                    type="checkbox"
+                    name="completionStatus"
+                    className="form-check-input"
+                    checked={cognitiveTask.completionStatus}
+                    onChange={handleCheckboxChange}
+                  />
+                  <label className="form-check-label">Completed</label>
+                </div>
+                <button type="submit" className="btn btn-primary w-auto">Add Cognitive Task</button>
               </form>
             </div>
           </div>
         </div>
+
 
         {/* Physical Activity Card */}
         <div className="col-md-4 mb-4">
@@ -378,7 +515,7 @@ const handleInsertAndUpdateProgress=()=>{
                   />
                   <label className="form-check-label">Completed</label>
                 </div>
-                <button type="submit" className="btn btn-success w-auto">Add Physical Activity</button>
+                <button type="submit" className="btn btn-primary w-auto">Add Physical Activity</button>
               </form>
             </div>
           </div>
@@ -388,142 +525,183 @@ const handleInsertAndUpdateProgress=()=>{
         <div className="col-md-4 mb-4">
           <div className="card shadow">
             <div className="card-body">
-              <h4 className="text-primary">Cognitive Task</h4>
+              <h4 className="text-primary">Social Interaction</h4>
               <form
                 onSubmit={(e) =>
-                  handleFormSubmit(e, 'caregiver/cognitive-task', { ...cognitiveTask, seniorID: selectedSenior.SeniorID }, 'Cognitive Task added')
+                  handleFormSubmit(e, 'caregiver/social-interaction', { ...socialInteraction, seniorID: selectedSenior.SeniorID }, 'Social Interaction added')
                 }
               >
                 <div className="mb-3">
                   <input
                     type="text"
-                    name="taskName"
+                    name="interactionType"
                     className="form-control col-sm-8 mx-auto"
-                    placeholder="Task Name"
-                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    placeholder="Interaction Type"
+                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
                     required
                   />
                 </div>
                 <div className="mb-3">
                   <input
                     type="date"
-                    name="assignedDate"
+                    name="interactionDate"
                     className="form-control col-sm-8 mx-auto"
-                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
                     required
                   />
                 </div>
                 <div className="mb-3">
-                  <input
-                    type="number"
-                    name="timeSpent"
+                  <textarea
+                    name="details"
                     className="form-control col-sm-8 mx-auto"
-                    placeholder="Time Spent (minutes)"
-                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
+                    placeholder="Details"
+                    onChange={(e) => handleInputChange(e, setSocialInteraction)}
                     required
                   />
                 </div>
-                <div className="mb-3">
-                  <select
-                    name="difficultyLevel"
-                    className="form-select col-sm-8 mx-auto"
-                    onChange={(e) => handleInputChange(e, setCognitiveTask)}
-                    value={cognitiveTask.difficultyLevel}
-                    required
-                  >
-                    <option value="Easy">Easy</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Hard">Hard</option>
-                  </select>
-                </div>
-                <div className="form-check mb-3">
-                  <input
-                    type="checkbox"
-                    name="completionStatus"
-                    className="form-check-input"
-                    checked={cognitiveTask.completionStatus}
-                    onChange={handleCheckboxChange}
-                  />
-                  <label className="form-check-label">Completed</label>
-                </div>
-                <button type="submit" className="btn btn-success w-auto">Add Cognitive Task</button>
+                <button type="submit" className="btn btn-primary w-auto mx-auto d-block">Add Social Interaction</button>
               </form>
             </div>
           </div>
         </div>
       </div>
-  )}
+    )}
 
-  {/* Progress Tracking */}
-  <div className="my-4">
-  <h3 className="text-secondary">Progress Tracking Data</h3>
-  <button className="btn btn-info w-auto mb-3" onClick={handleInsertAndUpdateProgress}>
-    Fetch Progress Data
-  </button>
+    {/* Third Row: Progress Tracking and Update Notes */}
+    <div className="row">
+  {selectedSenior && ( // Only render this card if a senior is selected
+    <div className="col-md-12 mb-4">
+      <div className="card shadow">
+        <div className="card-header bg-primary text-white">
+          <h3 className="mb-0">Progress Tracking</h3>
+        </div>
+        <div className="card-body">
+          <div className="row">
+            <div className="col-md-8 mb-4">
+              <button className="btn btn-primary w-auto mb-3" onClick={handleInsertAndUpdateProgress}>
+                Fetch Progress Data
+              </button>
 
-        {/* Progress Tracking Table */}
-        {selectedSenior && (
-          <div className="table-responsive">
-            <table className="table table-striped">
-              <thead>
-                <tr>
-                  <th>Progress ID</th>
-                  <th>Senior ID</th>
-                  <th>Date</th>
-                  <th>Progress Status</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {progressData
-                  .filter(progress => progress.SeniorID === selectedSenior.SeniorID)
-                  .map((progress) => (
-                    <tr key={progress.ProgressID}>
-                      <td>{progress.ProgressID}</td>
-                      <td>{progress.SeniorID}</td>
-                      <td>{new Date(progress.Date).toLocaleDateString()}</td>
-                      <td>{progress.ProgressStatus}</td>
-                      <td>{progress.ProgressScore}</td>
+              {/* Progress Tracking Table */}
+              <div className="table-responsive">
+                <table className="table table-striped">
+                  <thead>
+                    <tr>
+                      <th>Progress ID</th>
+                      <th>Senior ID</th>
+                      <th>Date</th>
+                      <th>Progress Status</th>
+                      <th>Score</th>
+                      <th>Note</th>
                     </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  </thead>
+                  <tbody>
+                    {progressData
+                      .filter(progress => progress.SeniorID === selectedSenior.SeniorID)
+                      .map((progress) => (
+                        <tr key={progress.ProgressID}>
+                          <td>{progress.ProgressID}</td>
+                          <td>{progress.SeniorID}</td>
+                          <td>{new Date(progress.Date).toLocaleDateString()}</td>
+                          <td>{progress.ProgressStatus}</td>
+                          <td>{progress.ProgressScore}</td>
+                          <td>{progress.Notes}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-  <h4 className="mt-4 text-secondary">Update Progress Notes</h4>
-  <div className="mb-3">
-    <input
-      type="text"
-      className="form-control col-sm-8 mx-auto"
-      placeholder="Progress ID"
-      value={progressID}
-      onChange={(e) => setProgressID(e.target.value)}
-    />
+            {/* Update Notes Card */}
+            <div className="col-md-4 mb-4">
+              <div className="mb-3">
+                <input
+                  type="text"
+                  className="form-control col-sm-8 mx-auto"
+                  placeholder="Progress ID"
+                  value={progressID}
+                  onChange={(e) => setProgressID(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  className="form-control col-sm-8 mx-auto"
+                  placeholder="Senior ID"
+                  value={selectedSenior ? selectedSenior.SeniorID : ''} // Use selectedSenior's ID
+                  readOnly // Make it read-only
+                />
+              </div>
+              <div className="mb-3">
+                <textarea
+                  className="form-control col-sm-8 mx-auto"
+                  placeholder="Enter your notes here"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+              </div>
+              <button className="btn btn-primary w-auto" onClick={updateNotes}>
+                Update Notes
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row mb-4">
+  <div className="col-md-12">
+    <div className="card shadow">
+      <div className="card-header bg-primary text-white">
+        <h3 className="mb-0">Messages</h3>
+      </div>
+      <div className="card-body">
+        <div className="message-list" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+          {messages.length > 0 ? (
+            messages.map((msg) => (
+              <div
+                key={msg.MessageID}
+                className={`message-card ${msg.SenderID === caregiverID ? 'sent' : 'received'}`}
+              >
+                {/* Sender Label */}
+                <p className={`message-label ${msg.SenderID === caregiverID ? 'sent-label' : 'received-label'}`}>
+                  {msg.SenderID === caregiverID ? 'You' : 'Senior'}
+                </p>
+                <p><strong>{msg.SenderName}</strong></p>
+                <p>{msg.MessageText}</p>
+                <p className="text-muted">{new Date(msg.SentAt).toLocaleString()}</p>
+              </div>
+            ))
+          ) : (
+            <p>No messages yet.</p>
+          )}
+        </div>
+        <form onSubmit={sendMessage}>
+          <div className="input-group">
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Type your message..."
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+            />
+            <button className="btn btn-primary" type="submit">
+              Send
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
-  <div className="mb-3">
-    <input
-      type="text"
-      className="form-control col-sm-8 mx-auto"
-      placeholder="Senior ID"
-      value={seniorID}
-      onChange={(e) => setSeniorID(e.target.value)}
-    />
-  </div>
-  <div className="mb-3">
-    <textarea
-      className="form-control col-sm-8 mx-auto"
-      placeholder="Enter your notes here"
-      value={notes}
-      onChange={(e) => setNotes(e.target.value)}
-    />
-  </div>
-  <button className="btn btn-warning w-auto" onClick={updateNotes}>
-    Update Notes
-  </button>
 </div>
-</div>
+    </div>
   )}
+  
+</div>
+
+  </div>
+  
+)}
 </div>
 
   );
@@ -531,4 +709,3 @@ const handleInsertAndUpdateProgress=()=>{
 
 export default CaregiverDashboard;
 
-/* make it such that after login theres 3 rows first row contains the select senior card that has a search filter insdide it to search seniors by name and the selected senior card with their info..2nd row contains the already existing 3 cards that are in proper format dont change that... in  3rd row  ive the card with progress title and fetch progress button. it takes 2 columns space and in the 3rd column space ive the update notes card on the left remove the senior  */

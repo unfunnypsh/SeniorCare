@@ -4,11 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Login = () => {
-  const [role, setRole] = useState('admin'); // 'admin' or 'caregiver'
-  const [username, setUsername] = useState(''); // For admin login
-  const [password, setPassword] = useState(''); // For admin login
-  const [name, setName] = useState(''); // For caregiver login
-  const [caregiverId, setCaregiverId] = useState(''); // For caregiver login
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -16,26 +13,14 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
 
-    let endpoint = '';
-    let data = {};
-
-    if (role === 'admin') {
-      endpoint = 'http://localhost:5000/api/admin/login';
-      data = { username, password };
-    } else if (role === 'caregiver') {
-      endpoint = 'http://localhost:5000/api/caregiver/login';
-      data = { name, caregiverId };
-    }
+    const endpoint = 'http://localhost:5000/api/admin/login';
+    const data = { username, password };
 
     try {
       const response = await axios.post(endpoint, data);
 
       if (response.data.success) {
-        if (role === 'admin') {
-          navigate('/admin-dashboard');
-        } else if (role === 'caregiver') {
-          navigate('/caregiver-dashboard');
-        }
+        navigate('/admin-dashboard'); // Redirect to senior dashboard
       } else {
         alert('Invalid credentials');
       }
@@ -47,76 +32,31 @@ const Login = () => {
   };
 
   return (
-<div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
-      <div className="card" style={{ width: '400px' }}>
-        <div className="card-body">
-          <h5 className="card-title text-center">{role.charAt(0).toUpperCase() + role.slice(1)} Login</h5>
-          <div className="text-center mb-3">
-            <button
-              onClick={() => setRole('admin')}
-              className={`btn ${role === 'admin' ? 'btn-primary' : 'btn-secondary'} me-2`}
-            >
-              Admin Login
-            </button>
-            <button
-              onClick={() => setRole('caregiver')}
-              className={`btn ${role === 'caregiver' ? 'btn-primary' : 'btn-secondary'}`}
-            >
-              Caregiver Login
-            </button>
-          </div>
-
+    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '100vh' }}>
+      <div className="card shadow-lg border-0" style={{ width: '100%', maxWidth: '400px' }}>
+        <div className="card-body p-4">
+          <h3 className="card-title text-center mb-4">Admin Login</h3>
           <form onSubmit={handleSubmit}>
-            {role === 'admin' && (
-              <>
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Username"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <input
-                    type="password"
-                    className="form-control"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-              </>
-            )}
-
-            {role === 'caregiver' && (
-              <>
-                <div className="mb-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Caregiver Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <input
-                    type="password"
-                    className="form-control"
-                    placeholder="Caregiver ID"
-                    value={caregiverId}
-                    onChange={(e) => setCaregiverId(e.target.value)}
-                    required
-                  />
-                </div>
-              </>
-            )}
-
+            <div className="mb-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+            <div className="mb-3">
+              <input
+                type="password"
+                className="form-control"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
             <button
               type="submit"
               className="btn btn-primary w-100"
@@ -126,12 +66,18 @@ const Login = () => {
             </button>
           </form>
 
-          <div className="text-center mt-3">
+          <div className="text-center mt-4">
             <button
               onClick={() => navigate('/senior-dashboard')}
-              className="btn btn-link"
+              className="btn btn-link text-muted"
             >
               Go to Senior Dashboard
+            </button>
+            <button
+              onClick={() => navigate('/caregiver-dashboard')}
+              className="btn btn-link text-muted"
+            >
+              Caregiver Login
             </button>
           </div>
         </div>

@@ -365,6 +365,22 @@ app.post('/api/caregiver/login', (req, res) => {
   });
 });
 
+app.post('/api/senior/login', (req, res) => {
+  const { name, seniorId} = req.body;
+  const query = 'SELECT * FROM Seniors WHERE name = ? AND SeniorId = ?'; // Adjust table name and fields as necessary
+  db.query(query, [name, seniorId], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ success: false, message: 'Error during login' });
+    }
+    if (results.length > 0) {
+      return res.status(200).json({ success: true });
+    } else {
+      return res.status(401).json({ success: false, message: 'Invalid caregiver credentials' });
+    }
+  });
+});
+
 app.post('/api/caregiver/insert-progress', (req, res) => {
   const query = 'CALL InsertProgressTracking()';
 
@@ -407,9 +423,11 @@ app.put('/api/progress-tracking/update', (req, res) => {
       if (result.affectedRows === 0) {
           return res.status(404).send('No matching progress tracking record found.');
       }
+      console.log('Received data:', req.body);
       res.status(200).send('Notes updated successfully.');
   });
 });
+
 app.post('/api/update-progress-status', (req, res) => {
   // First, disable safe updates
   db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
@@ -545,6 +563,58 @@ app.post('/api/admin/remove-caregiver', (req, res) => {
   });
 });
 
+// Fetch all messages between a senior and their assigned caregiver
+app.get('/api/messages/:seniorID/:caregiverID', (req, res) => {
+  const { seniorID, caregiverID } = req.params;
+  const query = `
+      SELECT * FROM Messages
+      WHERE (SenderID = ? AND ReceiverID = ?) OR (SenderID = ? AND ReceiverID = ?)
+      ORDER BY SentAt ASC
+  `;
+  db.query(query, [seniorID, caregiverID, caregiverID, seniorID], (err, results) => {
+      if (err) {
+          console.error(err);
+          res.status(500).send('Error fetching messages.');
+          return;
+      }
+      res.json(results);
+  });
+});
+// Express.js example
+app.get('/api/messages/:seniorID', async (req, res) => {
+  const seniorID = req.params.seniorID;
+  try {
+      const messages = await Message.find({ seniorID: seniorID }); // Fetch messages for this senior
+      res.json(messages);
+  } catch (error) {
+      res.status(500).json({ message: 'Error fetching messages' });
+  }
+});
+
+// Send a message from a senior or caregiver
+app.post('/api/messages', (req, res) => {
+  const { senderID, receiverID, messageText } = req.body;
+
+  // Log received data for debugging
+  console.log('Received message request:', { senderID, receiverID, messageText });
+
+  if (!senderID || !receiverID || !messageText) {
+    return res.status(400).send('Missing required fields.');
+  }
+
+  const query = `
+    INSERT INTO Messages (SenderID, ReceiverID, MessageText)
+    VALUES (?, ?, ?)
+  `;
+  
+  db.query(query, [senderID, receiverID, messageText], (err) => {
+    if (err) {
+      console.error('Error inserting message:', err);
+      return res.status(500).send('Error sending message.');
+    }
+    res.status(201).send('Message sent successfully.');
+  });
+});
 
 
   // Start the server
