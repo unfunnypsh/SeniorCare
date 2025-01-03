@@ -4,6 +4,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './SeniorDashboard.css';
 import Footer from "./extra/Footer";
 import { useNavigate } from 'react-router-dom';
+import Navbar from "./extra/Navbar";
 
 const SeniorDashboard = () => {
     // States to manage selected senior, activity types, and progress
@@ -167,7 +168,7 @@ const handleSelectSenior = async (senior) => {
     };
     
     return (
-        <div>
+        <div><Navbar />
 <div className="container mt-5">
             {/* Senior Login Form */}
             {!isAuthenticated && (
@@ -207,7 +208,7 @@ const handleSelectSenior = async (senior) => {
               onClick={() => navigate('/Caregiver-dashboard')}
               className="btn btn-link text-muted"
             >
-              Caregiver Dashboard
+              Go to Caregiver Login
             </button></div>
                             </div>
                         </div>
@@ -218,9 +219,6 @@ const handleSelectSenior = async (senior) => {
             {/* Senior Dashboard */}
             {isAuthenticated && selectedSenior && (
                 <>
-                    <h1 className="text-center mb-4 text-primary">Senior Dashboard</h1>
-
-                    {/* Caregiver Details */}
                     <div className="row mb-4">
                         <div className="col-md-6">
                             <div className="card shadow-sm">

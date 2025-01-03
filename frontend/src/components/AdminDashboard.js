@@ -5,6 +5,7 @@ import seniorImage from './senior-admin.jpg';
 import caregiverImage from './caregiver-admin.jpg';
 import './AdminDashboard.css';
 import Footer from "./extra/Footer";
+import Navbar from "./extra/Navbar";
 
 const AdminDashboard = () => {
   const [seniors, setSeniors] = useState([]);
@@ -147,10 +148,8 @@ const AdminDashboard = () => {
 
   return (
     <div>
+      <Navbar />
     <div className="container mt-5 admin-dashboard">
-      <h2 className="mb-4 text-center">Admin Dashboard</h2>
-
-      {/* Toggle Slider */}
       <div className="d-flex justify-content-center align-items-center mb-4">
         <button
           className={`btn ${toggleSection === "Senior" ? "btn-primary" : "btn-outline-primary"} mx-2`}

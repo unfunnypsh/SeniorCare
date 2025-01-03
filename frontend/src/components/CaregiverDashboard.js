@@ -3,6 +3,8 @@ import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './CaregiverDashboard.css';
 import Footer from "./extra/Footer";
+import { useNavigate } from 'react-router-dom';
+import Navbar from "./extra/Navbar";
 
 const CaregiverDashboard = () => {
   const [caregiverID, setCaregiverID] = useState('');
@@ -18,6 +20,7 @@ const CaregiverDashboard = () => {
   const [filteredSeniors, setFilteredSeniors] = useState(seniors);
   const [selectedSenior, setSelectedSenior] = useState(null);
   const [messages, setMessages] = useState([]);
+  const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
   const [socialInteraction, setSocialInteraction] = useState({
     interactionType: '',
@@ -266,7 +269,7 @@ const sendMessage = async (e) => {
 
 
   return (
-    <div>
+    <div><Navbar />
     <div className="container mt-5">
       {/* Caregiver Login Form */}
       {!isAuthenticated && (
@@ -313,6 +316,12 @@ const sendMessage = async (e) => {
               Login
             </button>
           </form>
+          <button
+              onClick={() => navigate('/senior-dashboard')}
+              className="btn btn-link text-muted"
+            >
+              Go to Senior Login
+            </button>
         </div>
       </div>
     </div>
@@ -322,9 +331,6 @@ const sendMessage = async (e) => {
       {/* Caregiver Dashboard (Visible after login) */}
       {isAuthenticated && (
   <div>
-    <h2 className="text-center mb-4 text-primary">Caregiver Dashboard</h2>
-
-    {/* Caregiver Info */}
     {caregiver && (
       <div className="alert alert-info text-center">
         <h3>Welcome, {caregiver.Name}</h3>
@@ -335,7 +341,7 @@ const sendMessage = async (e) => {
     <div className="row mb-4">
   <div className="col-md-6">
     <div className="card mb-4 shadow">
-      <div className="card-header bg-primary text-white">
+      <div className="card-header bg-light text-dark">
         <h3 className="mb-0">Select Senior</h3>
       </div>
       <div className="card-body">
@@ -367,7 +373,7 @@ const sendMessage = async (e) => {
   <div className="col-md-6">
     {selectedSenior && (
       <div className="card mb-4 shadow">
-        <div className="card-header bg-primary text-white">
+        <div className="card-header bg-light text-dark">
           <h4>Selected Senior: {selectedSenior.Name}</h4>
         </div>
         <div className="card-body">
@@ -574,7 +580,7 @@ const sendMessage = async (e) => {
   {selectedSenior && ( // Only render this card if a senior is selected
     <div className="col-md-12 mb-4">
       <div className="card shadow">
-        <div className="card-header bg-primary text-white">
+        <div className="card-header bg-light text-dark">
           <h3 className="mb-0">Progress Tracking</h3>
         </div>
         <div className="card-body">
@@ -649,12 +655,15 @@ const sendMessage = async (e) => {
             </div>
           </div>
         </div>
+      </div>  
       </div>
+      )}
 
-      <div className="row mb-4">
-  <div className="col-md-12">
-    <div className="card shadow">
-      <div className="card-header bg-primary text-white">
+<div className="row ">
+{selectedSenior && (
+  <div className="col-md-12 mb-4">
+    <div className="card shadow style={{ marginTop: '20px' }}">
+      <div className="card-header bg-light text-dark">
         <h3 className="mb-0">Messages</h3>
       </div>
       <div className="card-body">
@@ -695,9 +704,10 @@ const sendMessage = async (e) => {
       </div>
     </div>
   </div>
+)}
 </div>
-    </div>
-  )}
+
+
   
 </div>
 

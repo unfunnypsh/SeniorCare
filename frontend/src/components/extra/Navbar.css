@@ -1,0 +1,68 @@
+/* Dark theme for the navbar */
+.navbar {
+    background-color: #343a40; /* Dark background */
+    color: white; /* White text */
+    font-family: 'Arial', sans-serif;
+  }
+  
+  /* Ensure the logo fits well within the navbar */
+  .logo {
+    height: 40px;
+    width: auto;
+  }
+  
+  /* Style for navbar links */
+  .navbar-nav .nav-link {
+    padding: 10px 15px;
+    font-weight: 500;
+    color: white;
+    transition: color 0.3s ease;
+  }
+  
+  .navbar-nav .nav-link:hover {
+    color: #00bcd4; /* Light blue on hover */
+  }
+  
+  /* Dropdown menu adjustments */
+  .dropdown-menu {
+    background-color: #343a40;
+    border: none;
+    min-width: 150px;
+  }
+  
+  .dropdown-item {
+    color: white;
+  }
+  
+  .dropdown-item:hover {
+    background-color: #495057; /* Slightly lighter background on hover */
+    color: #00bcd4;
+  }
+  
+  /* Navbar toggler button */
+  .navbar-toggler {
+    border: 1px solid white;
+  }
+  
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%28255, 255, 255, 1%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+  }
+  
+  /* Responsive tweaks */
+  @media (max-width: 768px) {
+    .navbar-nav .nav-link {
+      padding: 8px 10px;
+      text-align: center;
+    }
+  
+    .logo {
+      height: 35px;
+    }
+  }
+  

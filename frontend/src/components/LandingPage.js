@@ -2,60 +2,7 @@ import React, { useState } from "react";
 import "./LandingPage.css"; // Include a custom CSS file for advanced styles
 import { Link } from "react-router-dom";
 import Footer from "./extra/Footer";
-
-const Nav = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
-  };
-
-  return (
-<header className="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
-      <div className="container">
-        <Link to="/" className="navbar-brand d-flex align-items-center">
-          <img
-            src="https://cdn5.f-cdn.com/contestentries/1596240/28815462/5d78faa6766e4_thumb900.jpg"
-            alt="SeniorCare Logo"
-            className="logo"
-          />
-        </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          onClick={toggleMenu}
-          aria-controls="navbarNav"
-          aria-expanded={menuOpen}
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div
-          className={`collapse navbar-collapse ${menuOpen ? "show" : ""}`}
-          id="navbarNav"
-        >
-          <ul className="navbar-nav ms-auto">
-            {["Home", "Services", "About", "Contact"].map((item) => (
-              <li className="nav-item" key={item}>
-                <a
-                  href={`#${item.toLowerCase()}`}
-                  className="nav-link text-dark font-weight-bold"
-                >
-                  {item}
-                </a>
-              </li>
-            ))}
-            <li className="nav-item">
-              <Link to="/login" className="nav-link text-dark font-weight-bold">
-                Login
-              </Link>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </header>
-  );
-};
+import Navbar from "./extra/Navbar";
 
 const Hero = () => (
   <section
@@ -73,12 +20,15 @@ const Hero = () => (
         providing tools for activity monitoring, emergency assistance, and
         community engagement.
       </p>
-      <div className="mt-4">
-      <Link to="/login" className="btn btn-primary btn-lg me-3">
-          Get Started
-        </Link>
-        <button className="btn btn-outline-light btn-lg">Learn More</button>
-      </div>
+      <div className="mt-4 d-flex justify-content-start">
+  <Link to="/login" className="btn btn-primary btn-lg me-3">
+    Get Started
+  </Link>
+  <button className="btn btn-outline-light btn-lg">
+    Learn More
+  </button>
+</div>
+
     </div>
   </section>
 );
@@ -169,7 +119,7 @@ const Reviews = () => {
   ];
 
   return (
-    <section className="reviews-section py-5 bg-light">
+    <section id="reviews" className="reviews-section py-5 bg-light">
       <div className="container">
         <h2 className="font-weight-bold text-center mb-4">
           What Our Customers Say
@@ -200,7 +150,7 @@ const Reviews = () => {
 const LandingPage = () => {
   return (
     <main>
-      <Nav />
+      <Navbar />
       <Hero />
       <Services />
       <About />

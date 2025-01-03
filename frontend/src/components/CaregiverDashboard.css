@@ -37,6 +37,17 @@ input {
   border: none;
 }
 
+/* Remove extra bottom margin from the progress card */
+.progress-card {
+  margin-bottom: 10px !important;
+}
+
+/* Reduce the top margin of the message card */
+.message-card-container {
+  margin-top: 10px !important;
+}
+
+
 .btn-primary:hover {
   background-color: rgb(113, 161, 234);
 }

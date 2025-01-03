@@ -1,45 +1,63 @@
+/* Main message container */
+.message-list {
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+/* Message bubble styling */
 .message-card {
-    background-color: #f1f1f1;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 10px;
-    max-width: 80%;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .sent {
-    background-color: #d1e7dd;
-    align-self: flex-end;
-  }
-  
-  .received {
-    background-color: #fff;
-    align-self: flex-start;
-  }
-  
-  .message-label {
-    font-weight: bold;
-    font-size: 0.9em;
-    margin-bottom: 5px;
-  }
-  
-  .sent-label {
-    color: #007bff; /* Blue for "You" label */
-    text-align: right;
-  }
-  
-  .received-label {
-    color: #28a745; /* Green for "Caregiver" label */
-    text-align: left;
-  }
-  
-  .input-group {
-    display: flex;
-    justify-content: space-between;
-  }
-  
-  .input-group input {
-    width: 85%;
-  }
-  
+  padding: 10px 15px;
+  border-radius: 20px;
+  margin-top: 10px;
+  max-width: 75%;
+  word-wrap: break-word;
+  display: inline-block;
+}
+
+/* Sent message bubble */
+.message-card.sent {
+  align-self: flex-end;
+  background-color: #22d764;
+  color: white;
+}
+
+/* Received message bubble */
+.message-card.received {
+  align-self: flex-start;
+  background-color: #e9ecef;
+  color: #333;
+}
+
+/* Sender label */
+.message-label {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+/* Input area */
+.input-group {
+  margin-top: 10px;
+}
+
+
+.input-group input[type="text"] {
+  border-radius: 20px;
+  padding: 10px 15px;
+  border: 1px solid #ddd;
+  outline: none;
+}
+
+.input-group button {
+  border-radius: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+}
