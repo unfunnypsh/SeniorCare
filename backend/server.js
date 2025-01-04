@@ -15,7 +15,7 @@ app.use(cors());
 const db = mysql.createConnection({
   host: 'localhost',
   user: 'root', // Use your MySQL username
-  password: 'harshith9902', // Use your MySQL password
+  password: 'Your Password', // Use your MySQL password
   database: 'senior_care',
 });
 
@@ -172,7 +172,7 @@ app.get('/api/seniors/:caregiverID', (req, res) => {
       return;
     }
   
-    // Map completedStatus to 1 (true) or 0 (false)
+
     const completed = completedStatus ? 1 : 0;
   
     const query = `
@@ -196,7 +196,7 @@ app.get('/api/seniors/:caregiverID', (req, res) => {
 app.post('/api/caregiver/cognitive-task', (req, res) => {
   const { taskName, assignedDate, completionStatus, seniorID, timeSpent, difficultyLevel } = req.body;
 
-  // Validate DifficultyLevel
+
   const validDifficultyLevels = ['Easy', 'Medium', 'Hard'];
   if (!validDifficultyLevels.includes(difficultyLevel)) {
     return res.status(400).send('Invalid difficulty level. Must be one of Easy, Medium, or Hard.');
@@ -219,28 +219,28 @@ app.post('/api/caregiver/cognitive-task', (req, res) => {
   
 // API to execute clean-up procedure
 app.post('/api/clean-activity-participation', (req, res) => {
-    // First, disable safe updates
+
     db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
         if (err) {
             console.error('Error disabling safe updates:', err);
             return res.status(500).send('Error disabling SQL_SAFE_UPDATES.');
         }
 
-        // Now, call the stored procedure to clean the redundant activity participation
+
         db.query('CALL CleanRedundantActivityParticipation();', (err, results) => {
             if (err) {
                 console.error('Error executing clean-up procedure:', err);
                 return res.status(500).send('Error cleaning redundant activity participation.');
             }
 
-            // Finally, re-enable safe updates
+
             db.query('SET SQL_SAFE_UPDATES = 1;', (err, results) => {
                 if (err) {
                     console.error('Error re-enabling safe updates:', err);
                     return res.status(500).send('Error re-enabling SQL_SAFE_UPDATES.');
                 }
 
-                // Respond with success message
+
                 res.status(200).send('Redundant activity participation cleaned successfully.');
             });
         });
@@ -334,7 +334,7 @@ app.post('/api/progress', (req, res) => {
 // Admin login endpoint
 app.post('/api/admin/login', (req, res) => {
     const { username, password } = req.body;
-    const query = 'SELECT * FROM Admins WHERE username = ? AND password = ?'; // Adjust table name and fields as necessary
+    const query = 'SELECT * FROM Admins WHERE username = ? AND password = ?';
     db.query(query, [username, password], (err, results) => {
         if (err) {
             console.error(err);
@@ -351,7 +351,7 @@ app.post('/api/admin/login', (req, res) => {
 // Caregiver login endpoint
 app.post('/api/caregiver/login', (req, res) => {
   const { name, caregiverId, gmailID } = req.body;
-  const query = 'SELECT * FROM Caregivers WHERE name = ? AND caregiverId = ? AND GmailID = ?'; // Adjust table name and fields as necessary
+  const query = 'SELECT * FROM Caregivers WHERE name = ? AND caregiverId = ? AND GmailID = ?';
   db.query(query, [name, caregiverId, gmailID], (err, results) => {
     if (err) {
       console.error(err);
@@ -374,7 +374,7 @@ app.post('/api/senior/login', (req, res) => {
           return res.status(500).json({ success: false, message: 'Error during login' });
       }
       if (results.length > 0) {
-          const senior = results[0]; // Assuming only one result is returned
+          const senior = results[0];
           return res.status(200).json({ 
               success: true, 
               senior: { 
@@ -506,35 +506,34 @@ app.get('/api/senior/:seniorID/report', (req, res) => {
       return res.status(500).send('Error fetching data.');
     }
 
-    res.json(results); // Send the raw data as JSON response
+    res.json(results);
   });
 });
 
 app.post('/api/admin/remove-senior', (req, res) => {
-  const { seniorID } = req.body; // Assuming you send seniorID in the request body
+  const { seniorID } = req.body;
 
-  // First, disable safe updates
   db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
       if (err) {
           console.error('Error disabling safe updates:', err);
           return res.status(500).send('Error disabling SQL_SAFE_UPDATES.');
       }
 
-      // Delete the senior entry with the specific ID
+
       db.query('DELETE FROM Seniors WHERE SeniorID = ?;', [seniorID], (err, results) => {
           if (err) {
               console.error('Error deleting senior:', err);
               return res.status(500).send('Error deleting senior.');
           }
 
-          // Finally, re-enable safe updates
+
           db.query('SET SQL_SAFE_UPDATES = 1;', (err, results) => {
               if (err) {
                   console.error('Error re-enabling safe updates:', err);
                   return res.status(500).send('Error re-enabling SQL_SAFE_UPDATES.');
               }
 
-              // Respond with success message
+
               res.status(200).send('Senior removed successfully.');
           });
       });
@@ -542,30 +541,30 @@ app.post('/api/admin/remove-senior', (req, res) => {
 });
 
 app.post('/api/admin/remove-caregiver', (req, res) => {
-  const { caregiverID } = req.body; // Assuming you send caregiverID in the request body
+  const { caregiverID } = req.body; 
 
-  // First, disable safe updates
+
   db.query('SET SQL_SAFE_UPDATES = 0;', (err, results) => {
       if (err) {
           console.error('Error disabling safe updates:', err);
           return res.status(500).send('Error disabling SQL_SAFE_UPDATES.');
       }
 
-      // Delete the caregiver entry with the specific ID
+
       db.query('DELETE FROM Caregivers WHERE CaregiverID = ?;', [caregiverID], (err, results) => {
           if (err) {
               console.error('Error deleting caregiver:', err);
               return res.status(500).send('Error deleting caregiver.');
           }
 
-          // Finally, re-enable safe updates
+
           db.query('SET SQL_SAFE_UPDATES = 1;', (err, results) => {
               if (err) {
                   console.error('Error re-enabling safe updates:', err);
                   return res.status(500).send('Error re-enabling SQL_SAFE_UPDATES.');
               }
 
-              // Respond with success message
+
               res.status(200).send('Caregiver removed successfully.');
           });
       });
@@ -589,11 +588,11 @@ app.get('/api/messages/:seniorID/:caregiverID', (req, res) => {
       res.json(results);
   });
 });
-// Express.js example
+
 app.get('/api/messages/:seniorID', async (req, res) => {
   const seniorID = req.params.seniorID;
   try {
-      const messages = await Message.find({ seniorID: seniorID }); // Fetch messages for this senior
+      const messages = await Message.find({ seniorID: seniorID });
       res.json(messages);
   } catch (error) {
       res.status(500).json({ message: 'Error fetching messages' });
@@ -604,7 +603,7 @@ app.get('/api/messages/:seniorID', async (req, res) => {
 app.post('/api/messages', (req, res) => {
   const { senderID, receiverID, messageText } = req.body;
 
-  // Log received data for debugging
+
   console.log('Received message request:', { senderID, receiverID, messageText });
 
   if (!senderID || !receiverID || !messageText) {

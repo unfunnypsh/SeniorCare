@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from "./extra/Navbar";
 
 const SeniorDashboard = () => {
-    // States to manage selected senior, activity types, and progress
     const [seniors, setSeniors] = useState([]);
     const [seniorID, setSeniorID] = useState('');
     const [physicalActivity, setPhysicalActivity] = useState([]);
@@ -51,15 +50,15 @@ const SeniorDashboard = () => {
                 seniorId: seniorID,
             });
             
-            console.log(response.data); // Log the response to check if the structure is correct
+            console.log(response.data);
     
             if (response.data.success && response.data.senior) {
                 setIsAuthenticated(true);
                 setSeniorID(response.data.senior.SeniorID);
                 setSelectedSenior(response.data.senior);
-                await fetchCaregiver(response.data.senior.CaregiverID);  // Fetch caregiver details
-                await fetchActivities(response.data.senior.SeniorID);  // Fetch activities and progress
-                await fetchMessages(response.data.senior.SeniorID, response.data.senior.CaregiverID); // Fetch messages
+                await fetchCaregiver(response.data.senior.CaregiverID);
+                await fetchActivities(response.data.senior.SeniorID);
+                await fetchMessages(response.data.senior.SeniorID, response.data.senior.CaregiverID);
             } else {
                 alert(response.data.message);
             }
@@ -126,14 +125,14 @@ const handleSelectSenior = async (senior) => {
     
     useEffect(() => {
         if (selectedSenior && caregiverID) {
-            fetchMessages(selectedSenior.SeniorID, caregiverID); // Fetch messages for the selected senior
+            fetchMessages(selectedSenior.SeniorID, caregiverID);
         }
     }, [selectedSenior, caregiverID]);
       
       const fetchMessages = async (seniorID, caregiverID) => {
         try {
             const response = await axios.get(`http://localhost:5000/api/messages/${seniorID}/${caregiverID}`);
-            setMessages(response.data); // Update state with fetched messages
+            setMessages(response.data);
         } catch (error) {
             console.error('Error fetching messages:', error);
         }
@@ -141,15 +140,15 @@ const handleSelectSenior = async (senior) => {
     
     const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim()) return; // Don't send empty messages
+        if (!newMessage.trim()) return;
     
         if (!selectedSenior || !selectedSenior.CaregiverID) {
             alert("Please select a senior and caregiver.");
             return;
         }
     
-        const senderID = selectedSenior.SeniorID; // Sender is the selected senior
-        const receiverID = selectedSenior.CaregiverID; // Receiver is the caregiver of the selected senior
+        const senderID = selectedSenior.SeniorID;
+        const receiverID = selectedSenior.CaregiverID;
     
         try {
             const response = await axios.post('http://localhost:5000/api/messages', {
@@ -158,8 +157,8 @@ const handleSelectSenior = async (senior) => {
                 messageText: newMessage,
             });
             if (response.status === 201) {
-                setMessages([...messages, { SenderID: senderID, ReceiverID: receiverID, MessageText: newMessage }]); // Add new message
-                setNewMessage(''); // Clear message input
+                setMessages([...messages, { SenderID: senderID, ReceiverID: receiverID, MessageText: newMessage }]);
+                setNewMessage('');
             }
         } catch (error) {
             console.error("Error sending message:", error);

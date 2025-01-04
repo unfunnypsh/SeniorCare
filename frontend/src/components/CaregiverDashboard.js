@@ -55,7 +55,7 @@ const CaregiverDashboard = () => {
   
       if (response.data.success) {
         setIsAuthenticated(true);
-        setCaregiverID(caregiverID); // Ensure caregiverID is set correctly
+        setCaregiverID(caregiverID);
         fetchCaregiverProfile();
       } else {
         alert(response.data.message);
@@ -83,9 +83,6 @@ const CaregiverDashboard = () => {
 
     const [searchQuery, setSearchQuery] = useState('');
 
-    // const filteredSeniors = seniors.filter(senior => 
-    //   senior.Name.toLowerCase().includes(searchQuery.toLowerCase())
-    // );
   
     const handleSearch = (e) => {
       setSearchQuery(e.target.value);
@@ -127,7 +124,7 @@ const CaregiverDashboard = () => {
       console.error('Selected senior is invalid:', senior);
       return;
     }
-    fetchMessages(senior.SeniorID, caregiverID); // Pass both seniorID and caregiverID
+    fetchMessages(senior.SeniorID, caregiverID); 
   };
   
   
@@ -194,11 +191,11 @@ const CaregiverDashboard = () => {
     try {
         const response = await axios.put('http://localhost:5000/api/progress-tracking/update', {
             progressID,
-            seniorID: selectedSenior.SeniorID, // Ensure you're sending the correct Senior ID
+            seniorID: selectedSenior.SeniorID, 
             notes,
         });
         alert(response.data);
-        fetchProgressTrackingData(); // Refresh the data after updating
+        fetchProgressTrackingData();
     } catch (error) {
         console.error('Error updating notes:', error);
         alert('Error updating notes.');
@@ -209,7 +206,7 @@ const updateProgressStatus = async () => {
   try {
     const response = await axios.post('http://localhost:5000/api/update-progress-status');
     alert(response.data);
-    fetchProgressTrackingData(); // Refresh data after updating
+    fetchProgressTrackingData();
   } catch (error) {
     console.error('Error updating progress status:', error);
     alert('Error updating progress status.');
@@ -224,9 +221,9 @@ const handleInsertAndUpdateProgress=()=>{
 }
 const fetchMessages = async (seniorID, caregiverID) => {
   try {
-    // Ensure that both seniorID and caregiverID are correct
+
     const response = await axios.get(`http://localhost:5000/api/messages/${seniorID}/${caregiverID}`);
-    setMessages(response.data);  // Update state with the messages from the API
+    setMessages(response.data);
   } catch (error) {
     console.error('Error fetching messages:', error);
   }
@@ -237,31 +234,31 @@ const fetchMessages = async (seniorID, caregiverID) => {
 const sendMessage = async (e) => {
   e.preventDefault();
 
-  // Check if caregiverID and selectedSenior are properly set
+
   if (!caregiverID || !selectedSenior || !selectedSenior.SeniorID || !newMessage) {
     alert('Please ensure a senior is selected and a caregiver is logged in.');
     return;
   }
 
-  // Log to verify the correct values
+
   console.log('Sending message:', {
-    senderID: caregiverID,  // Should be set from caregiver's login
-    receiverID: selectedSenior.SeniorID,  // Should be set when a senior is selected
-    messageText: newMessage,  // Ensure message text is set
+    senderID: caregiverID,
+    receiverID: selectedSenior.SeniorID,
+    messageText: newMessage,
   });
 
   try {
     const response = await axios.post('http://localhost:5000/api/messages', {
-      senderID: caregiverID,  // Ensure caregiverID is correctly passed
-      receiverID: selectedSenior.SeniorID,  // Ensure SeniorID is correctly passed
-      messageText: newMessage,  // Ensure message text is correctly passed
+      senderID: caregiverID, 
+      receiverID: selectedSenior.SeniorID, 
+      messageText: newMessage,
     });
 
-    // After successful send, clear the input and reload messages
-    setNewMessage('');  // Clear the message input
-    fetchMessages(selectedSenior.SeniorID, caregiverID);  // Refresh messages after sending
+
+    setNewMessage('');
+    fetchMessages(selectedSenior.SeniorID, caregiverID); 
   } catch (error) {
-    console.error('Error sending message:', error);  // Log error for debugging
+    console.error('Error sending message:', error);
     alert('Failed to send message. Please try again.');
   }
 };
@@ -276,7 +273,6 @@ const sendMessage = async (e) => {
     <div className="container-fluid vh-100 d-flex align-items-center justify-content-center login-container">
     <div className="row w-100">
       <div className="col-md-6 login-left d-none d-md-flex align-items-center justify-content-center">
-        {/* Background image will be applied via CSS */}
       </div>
       <div className="col-md-6">
         <div className="login-form p-4">
@@ -336,8 +332,6 @@ const sendMessage = async (e) => {
         <h3>Welcome, {caregiver.Name}</h3>
       </div>
     )}
-
-    {/* First Row: Senior Selection with Search Filter */}
     <div className="row mb-4">
   <div className="col-md-6">
     <div className="card mb-4 shadow">
@@ -577,7 +571,7 @@ const sendMessage = async (e) => {
 
     {/* Third Row: Progress Tracking and Update Notes */}
     <div className="row">
-  {selectedSenior && ( // Only render this card if a senior is selected
+  {selectedSenior && (
     <div className="col-md-12 mb-4">
       <div className="card shadow">
         <div className="card-header bg-light text-dark">
@@ -637,8 +631,8 @@ const sendMessage = async (e) => {
                   type="text"
                   className="form-control col-sm-8 mx-auto"
                   placeholder="Senior ID"
-                  value={selectedSenior ? selectedSenior.SeniorID : ''} // Use selectedSenior's ID
-                  readOnly // Make it read-only
+                  value={selectedSenior ? selectedSenior.SeniorID : ''} 
+                  readOnly 
                 />
               </div>
               <div className="mb-3">
