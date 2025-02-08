@@ -105,8 +105,8 @@ The Senior Citizen Activity Tracking and Monitoring System is a web-based applic
 - **Health Data Integration** with wearable devices.  
 
 **Contributors**  
-Harshith Kumar -[mrproducer69]
-S Pranava - [unfunnypsh]  
+Harshith Kumar -(https://github.com/MrProducer01)
+S Pranava - (https://github.com/unfunnypsh)  
 
 **License**  
 This project is licensed under the MIT License - see the LICENSE file for details.  
